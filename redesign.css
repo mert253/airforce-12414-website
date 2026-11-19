@@ -1,0 +1,132 @@
+/* Shared editorial layout, informed by Team 254 and Simbotics. */
+:root { --navy: #08182c; --navy-light: #10263f; --silver: #f2f3f5; --gold: #dfbb72; }
+h1, h2, .season-subtitle { font-family: 'Barlow Condensed', Inter, sans-serif; font-weight: 700; letter-spacing: -.015em; }
+h2 { font-size: clamp(32px, 3.5vw, 48px); line-height: 1.08; }
+.button { border-radius: 2px; font-size: 13px; padding: 14px clamp(14px, 1.8vw, 24px); }
+.brand img { width: clamp(112px, 11vw, 136px); }
+#navigation { gap: clamp(14px, 1.8vw, 25px); }
+.language-switch { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; flex: 0 0 auto; border: 1px solid var(--dark-line); border-radius: 4px; color: var(--gold); font-size: 12px; font-weight: 700; }
+.language-switch:hover { background: var(--navy-light); border-color: var(--gold); }
+.nav-link, .nav-group > summary { font-size: 13px; font-weight: 650; letter-spacing: .02em; }
+.nav-group { position: relative; }
+.nav-group > summary { display: flex; align-items: center; gap: 7px; min-height: 50px; list-style: none; cursor: pointer; }
+.nav-group > summary::-webkit-details-marker { display: none; }
+.nav-group > summary svg { width: 14px; height: 14px; transition: transform .18s ease; }
+.nav-group[open] > summary svg { transform: rotate(180deg); }
+.nav-group:is([data-current], [open]) > summary, .nav-group > summary:hover { color: var(--gold); }
+.nav-dropdown { position: absolute; top: 100%; left: -20px; min-width: 250px; padding: 10px; background: var(--navy-light); border: 1px solid var(--dark-line); border-top: 2px solid var(--gold); box-shadow: 0 18px 30px #0003; }
+.nav-sub-link { display: flex; align-items: center; min-height: 44px; padding: 10px 14px; font-size: 13px; white-space: nowrap; border-radius: 2px; }
+.nav-sub-link:hover, .nav-sub-link.is-active { color: var(--gold); background: #ffffff08; }
+@media (min-width: 981px) {
+  .nav-group:nth-last-child(2) .nav-dropdown { left: auto; right: 0; }
+}
+.hero { background: radial-gradient(ellipse at 80% 40%, #16324d 0, var(--navy) 62%); }
+.hero-main { grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 64px); padding-block: clamp(30px, 4.2vw, 56px); }
+.hero h1 { font-family: 'Barlow Condensed', Inter, sans-serif; font-weight: 900; font-size: clamp(72px, 8.65vw, 124px); line-height: .86; letter-spacing: -.025em; margin: 12px 0 20px; }
+.hero-eyebrow { font-size: 11px; letter-spacing: .16em; color: var(--gold); }
+.hero-eyebrow span { padding-inline: 6px; }
+.hero-identity { font-size: clamp(16px, 1.55vw, 21px); font-weight: 600; }
+.hero-description { max-width: 46ch; color: #b6c3d2; font-size: clamp(14px, 1.3vw, 16px); line-height: 1.65; margin-top: 10px; }
+.hero-actions { margin-top: clamp(18px, 2.2vw, 26px); }
+.hero-art { width: min(100%, 460px); justify-self: center; }
+.editorial-label { display: flex; align-items: center; gap: 20px; margin-bottom: 28px; color: var(--gold-ink); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.editorial-label::after { content: ''; height: 1px; background: var(--line); flex: 1; }
+.home-frc-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 6vw, 80px); align-items: center; }
+.home-frc-grid > * { min-width: 0; }
+.home-photo { padding-block: clamp(24px, 4vw, 48px); background: var(--paper); }
+.home-photo > .container { max-width: 980px; }
+.home-photo-heading { align-items: center; flex-wrap: wrap; gap: 4px 18px; margin-bottom: 14px; }
+.home-photo .photo-stage { aspect-ratio: 16/9; border-radius: 3px; }
+.home-season-feature { background: var(--navy); color: var(--silver); }
+.home-season-feature .editorial-label, .home-season-feature .eyebrow { color: var(--gold); }
+.home-season-feature .editorial-label::after { background: var(--dark-line); }
+.season-feature-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 6vw, 80px); }
+.season-feature-title h2 { font-size: clamp(60px, 7vw, 94px); font-weight: 900; letter-spacing: -.025em; line-height: 1; }
+.season-subtitle { font-size: clamp(22px, 2.5vw, 26px); color: #bdc9d9; margin-top: 8px; }
+.season-feature-title .text-link { color: var(--gold); margin-top: 16px; }
+.home-season-summary { display: grid; gap: 14px; margin: 24px 0 0; padding-top: 20px; border-top: 1px solid var(--dark-line); max-width: 44ch; }
+.home-season-summary > div { min-width: 0; }
+.home-season-summary dt { color: #b6c3d2; font-size: 12px; line-height: 1.5; }
+.home-season-summary dd { margin: 4px 0 0; color: var(--silver); font-size: 14px; line-height: 1.65; }
+.season-feature-body > p { font-size: 15px; color: #c7d2df; }
+.season-event { border-left: 2px solid var(--gold); padding: 4px 0 4px 22px; margin-top: 24px; }
+.season-event h3 { font-size: 24px; margin-top: 8px; }
+.season-event .season-date { font-size: 17px; font-weight: 600; margin-top: 10px; }
+.season-event .season-location { font-size: 13px; color: #b6c3d2; margin-top: 4px; }
+.season-event .text-link { color: var(--gold); margin-top: 8px; }
+.home-frc { background: var(--silver); border-bottom: 1px solid var(--line); }
+.home-frc h2 { margin-top: 12px; }
+.home-frc-strip { padding-block: clamp(32px, 4vw, 52px); }
+.home-frc-strip h2 { font-size: clamp(30px, 3.5vw, 44px); }
+.home-partners { background: var(--paper); }
+.partners-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 40px; }
+.partners-layout > div > .text-link { margin-top: 12px; }
+.home-partner { border: 0; border-radius: 0; background: transparent; padding-inline: 12px; }
+.home-partner + .home-partner { border-left: 1px solid var(--line); }
+.home-partner > a { height: 84px; }
+.home-partner > a:has(strong) { height: auto; min-height: 48px; }
+.home-partner img { max-width: min(100%, 176px); max-height: 72px; }
+.home-partner span { font-size: 13px; line-height: 1.55; }
+.home-support { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding-top: 30px; margin-top: 36px; border-top: 1px solid var(--line); }
+.home-support p { color: var(--muted); font-size: 14px; margin-top: 8px; }
+.home-support .button { flex-shrink: 0; }
+.page { padding-block: 0 var(--section-space); }
+.page-heading { display: grid; gap: 8px; margin-bottom: 0; padding-block: clamp(14px, 2vw, 26px) clamp(22px, 3.5vw, 42px); background: var(--navy); color: var(--silver); box-shadow: 0 0 0 100vmax var(--navy); clip-path: inset(0 -100vmax); border: 0; }
+.page-heading .breadcrumb { color: #acbbcf; margin: 0; }
+.page-heading .breadcrumb a:is(:hover, :focus-visible) { color: var(--gold); }
+.page-heading :focus-visible { outline-color: var(--gold); }
+.page-heading h1 { font-size: clamp(34px, 5.15vw, 68px); line-height: 1.04; }
+.page-heading > p { color: #bbc8d9; max-width: 62ch; font-size: clamp(14px, 1.4vw, 16px); }
+.page-heading-compact h1 { font-size: clamp(34px, 4.65vw, 60px); }
+.page h2 { font-size: clamp(28px, 3.35vw, 44px); }
+@media (prefers-reduced-motion: no-preference) {
+  .nav-dropdown { animation: menu-enter .18s ease-out both; }
+  @keyframes menu-enter { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: none; } }
+}
+@media (max-width: 1100px) {
+  .header-inner { gap: 12px; }
+  #navigation { gap: 14px; }
+  .partners-layout { gap: 25px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
+}
+@media (max-width: 980px) {
+  html:not(.menu-ready) .site-header { position: static; }
+  .header-inner { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-rows: minmax(var(--header-height), auto); column-gap: 8px; }
+  .menu-toggle { grid-column: 2; grid-row: 1; }
+  .language-switch { grid-column: 3; grid-row: 1; }
+  .brand img { width: 125px; }
+  #navigation { grid-column: 1 / -1; grid-row: 2; gap: 0; }
+  .nav-group { border-bottom: 1px solid var(--dark-line); }
+  .nav-group > summary { justify-content: space-between; font-size: 16px; padding-block: 12px; }
+  .nav-dropdown { position: static; box-shadow: none; border: 0; border-left: 2px solid var(--gold); margin: 0 0 12px 4px; padding: 0 8px; min-width: 0; background: transparent; }
+  .nav-sub-link { white-space: normal; font-size: 14px; }
+  .partners-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+}
+@media (max-width: 520px) {
+  .hero-main { grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr); padding-block: 22px 26px; gap: 0 12px; }
+  .hero-copy { display: contents; animation: none; }
+  .hero-eyebrow { grid-column: 1 / -1; margin-bottom: 10px; }
+  .hero h1 { grid-column: 1; grid-row: 2; font-size: clamp(50px, 16.4vw, 76px); line-height: .88; margin-block: 8px 14px; }
+  .hero-identity, .hero-description, .hero-actions { grid-column: 1 / -1; min-width: 0; }
+  .hero-art { grid-column: 2; grid-row: 2; justify-self: end; }
+}
+@media (max-width: 720px) {
+  .home-frc-grid, .season-feature-grid, .partners-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .editorial-label { margin-bottom: 24px; }
+  .season-feature-title .text-link { margin-top: 8px; }
+  .home-season-summary { margin-top: 20px; padding-top: 16px; }
+  .season-feature-body { border-top: 1px solid var(--dark-line); padding-top: 24px; }
+  .partners-layout { padding-top: 0; }
+  .partner-marks { gap: 0; }
+  .home-partner { padding: 12px; gap: 12px; }
+  .home-partner > a { height: 72px; }
+  .home-support { align-items: flex-start; flex-direction: column; gap: 20px; margin-top: 30px; padding-top: 30px; }
+  .home-photo .team-photo-image { object-fit: contain; }
+  .page-heading h1 { font-size: clamp(34px, 9.2vw, 48px); }
+}
+@media (max-width: 480px) {
+  .partner-marks { grid-template-columns: minmax(0, 1fr); }
+  .home-partner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 20px; padding: 16px 0; text-align: left; }
+  .home-partner + .home-partner { border-left: 0; border-top: 1px solid var(--line); }
+  .home-partner > a { height: 58px; }
+  .home-partner img { max-width: min(100%, 142px); max-height: 58px; }
+}

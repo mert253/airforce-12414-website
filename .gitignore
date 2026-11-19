@@ -1,0 +1,10 @@
+node_modules/
+dist/
+/en/
+.qa/
+.codex-attachments/
+/.publication-review/
+.vercel/
+.env*
+!.env.example
+*.log
