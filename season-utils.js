@@ -17,3 +17,21 @@ export function selectUpcomingEvent(events = [], now = new Date()) {
     event.endDate >= event.startDate && event.endDate >= today)
     .sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
 }
+
+export function getEventCountdown(startDate, endDate, now = new Date()) {
+  if (!isCalendarDate(startDate) || !isCalendarDate(endDate) || endDate < startDate) return null;
+  const nowMs = now instanceof Date ? now.getTime() : Number(now);
+  if (!Number.isFinite(nowMs)) return null;
+  // Türkiye observes permanent UTC+3 (Europe/Istanbul).
+  const startMs = Date.parse(`${startDate}T00:00:00+03:00`);
+  const endMs = Date.parse(`${endDate}T23:59:59+03:00`);
+  if (nowMs >= endMs) return { state: 'ended', days: 0, hours: 0, minutes: 0, seconds: 0 };
+  if (nowMs >= startMs) return { state: 'live', days: 0, hours: 0, minutes: 0, seconds: 0 };
+  const remaining = Math.max(0, Math.floor((startMs - nowMs) / 1000));
+  const days = Math.floor(remaining / 86400);
+  const hours = Math.floor((remaining % 86400) / 3600);
+  const minutes = Math.floor((remaining % 3600) / 60);
+  const seconds = remaining % 60;
+  return { state: 'upcoming', days, hours, minutes, seconds };
+}
+

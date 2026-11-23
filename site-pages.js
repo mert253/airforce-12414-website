@@ -94,6 +94,7 @@ function homeContent(lang = 'tr') {
           <h3>${e(event.title)}</h3>
           <p class="season-date">${e(event.date)}</p>
           <p class="season-location">${e(event.location)}</p>
+          <div class="event-countdown" data-countdown-start="${e(event.startDate)}" data-countdown-end="${e(event.endDate)}" aria-live="off" hidden></div>
           ${a(t('Resmî etkinlik bilgisi ', 'Official event information ') + icon('external'), event.url, 'class="text-link" target="_blank" rel="noopener noreferrer"')}
         </article>` : ''}
       </div>
@@ -237,7 +238,7 @@ function siteFooter(lang) {
           <a href="${localizedPath('/', lang)}" class="footer-brand"><img src="${logoPath}" alt="AIR FORCE Ankara İstech Robotics" width="440" height="197" loading="lazy"></a>
           <p>${e(content.school.name)}<br>FIRST Robotics Competition · #12414</p>
           <div class="footer-contact">
-            ${a(e(content.email), `mailto:${content.email}`)}
+            <span class="footer-email-row">${a(e(content.email), `mailto:${content.email}`)}${content.emailIsPlaceholder ? '' : `<span class="copy-email-wrap"><button type="button" class="copy-email-btn copy-email-btn--dark" data-copy-email="${e(content.email)}" aria-label="${e(t('E-posta adresini kopyala', 'Copy email address'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>${t('Kopyala', 'Copy')}</span></button><span class="sr-only" role="status" aria-live="polite" data-copy-status></span></span>`}</span>
             ${a('Instagram ' + icon('external'), content.instagram, 'target="_blank" rel="noopener noreferrer"')}
           </div>
         </div>
@@ -246,6 +247,7 @@ function siteFooter(lang) {
       <div class="footer-bottom"><span>© ${new Date().getFullYear()} AIR FORCE #12414</span><a href="#top">${t('Sayfanın başına dön', 'Back to top')} ↑</a></div>
     </div>
   </footer>
+  <button type="button" class="back-to-top" data-back-to-top aria-label="${t('Sayfanın başına dön', 'Back to top')}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
   <dialog class="lightbox" aria-label="${t('Galeri fotoğrafı', 'Gallery photo')}">
     <div class="lightbox-toolbar"><span class="lightbox-position"></span><button type="button" class="lightbox-close" aria-label="${t('Fotoğrafı kapat', 'Close photo')}">${t('Kapat', 'Close')} ×</button></div>
     <div class="lightbox-stage"><button type="button" class="lightbox-prev" aria-label="${t('Önceki fotoğraf', 'Previous photo')}">←</button><img class="lightbox-image" alt=""><button type="button" class="lightbox-next" aria-label="${t('Sonraki fotoğraf', 'Next photo')}">→</button></div>
@@ -269,6 +271,72 @@ function pageIntroduction(page) {
   };
   return introductions[page.kind] ? `<p>${e(introductions[page.kind])}</p>` : '';
 }
+function buildStructuredData(page, lang) {
+  const t = translator(lang);
+  const localized = siteContent(lang);
+  const originalPath = page.originalPath || page.path;
+  const home = originalPath === '/';
+  const graph = [];
+
+  if (home) {
+    graph.push({
+      '@type': 'Organization',
+      name: teamName,
+      alternateName: organization,
+      email: localized.email,
+      parentOrganization: { '@type': 'EducationalOrganization', name: localized.school.name, url: localized.school.url },
+      sameAs: [localized.instagram],
+      ...(publicUrl('/') ? { url: publicUrl('/'), logo: publicUrl(logoPath) } : {}),
+    });
+  } else if (!page.hidden) {
+    const homeUrl = publicUrl(localizedPath('/', lang));
+    const currentUrl = publicUrl(page.path);
+    graph.push({
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: t('Ana sayfa', 'Home'), ...(homeUrl ? { item: homeUrl } : {}) },
+        { '@type': 'ListItem', position: 2, name: page.title, ...(currentUrl ? { item: currentUrl } : {}) },
+      ],
+    });
+  }
+
+  if (home || page.kind === 'robots') {
+    const event = selectUpcomingEvent(localized.events);
+    if (event) {
+      graph.push({
+        '@type': 'Event',
+        name: event.title,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        eventStatus: 'https://schema.org/EventScheduled',
+        location: { '@type': 'Place', name: event.location },
+        ...(url(event.url) ? { url: event.url } : {}),
+        organizer: { '@type': 'Organization', name: localized.frcOrganizer.name, url: localized.frcOrganizer.url },
+      });
+    }
+  }
+
+  if (page.kind === 'contact') {
+    const faqs = publishedRecords(localized.faq).filter(item => item.question && item.answer);
+    if (faqs.length) {
+      graph.push({
+        '@type': 'FAQPage',
+        mainEntity: faqs.map(item => ({
+          '@type': 'Question',
+          name: item.question,
+          acceptedAnswer: { '@type': 'Answer', text: item.answer },
+        })),
+      });
+    }
+  }
+
+  if (!graph.length) return '';
+  const payload = graph.length === 1
+    ? { '@context': 'https://schema.org', ...graph[0] }
+    : { '@context': 'https://schema.org', '@graph': graph };
+  return `<script type="application/ld+json">${JSON.stringify(payload).replace(/</g, '\\u003c')}</script>`;
+}
 export function renderPage(html,page) {
   const lang = page.lang || 'tr';
   const t = translator(lang);
@@ -276,21 +344,21 @@ export function renderPage(html,page) {
   const home=originalPath==='/';
   const title=home ? `${teamName} | ${organization}` : `${page.title} | ${teamName}`;
   const canonical=publicUrl(page.path);
+  const ogImage=publicUrl('/assets/pegasus.png');
   const noindex = page.hidden || page.noindex;
   const alternates = noindex ? '' : ['tr', 'en', 'x-default'].map(code => {
     const path = localizedPath(originalPath, code === 'x-default' ? 'tr' : code);
     return `<link rel="alternate" hreflang="${code}" href="${e(publicUrl(path) || path)}" vite-ignore>`;
   }).join('');
-  const schema={'@context':'https://schema.org','@type':'Organization',name:teamName,alternateName:organization,email:content.email,parentOrganization:{'@type':'EducationalOrganization',name:content.school.name,url:content.school.url},sameAs:[content.instagram],...(publicUrl('/') ? {url:publicUrl('/'),logo:publicUrl(logoPath)}:{})};
+  const structuredData = buildStructuredData(page, lang);
   return html
     .replace('<html lang="tr">', `<html lang="${lang}">`)
     .replace('<!-- site-hero -->', () => pageLinks(renderHomeHero(lang), lang))
-    .replace('<!-- site-head -->',()=>`<meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0b1728"><meta name="description" content="${e(page.description)}"><title>${e(title)}</title><meta property="og:title" content="${e(title)}"><meta property="og:description" content="${e(page.description)}"><meta property="og:type" content="website"><meta property="og:site_name" content="${teamName}"><meta property="og:locale" content="tr_TR"><meta name="twitter:card" content="summary">${noindex ? '<meta name="robots" content="noindex, follow">':''}${canonical&&!noindex ? `<link rel="canonical" href="${e(canonical)}"><meta property="og:url" content="${e(canonical)}">`:''}${publicUrl('/assets/pegasus.png') ? `<meta property="og:image" content="${e(publicUrl('/assets/pegasus.png'))}">`:''}${home ? `<script type="application/ld+json">${JSON.stringify(schema).replace(/</g,'\\u003c')}</script>`:''}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preload" href="/assets/fonts/e4af272ccee01ff0-s.p.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/fonts/reference-fonts.css"><link rel="stylesheet" href="/styles.css">`)
+    .replace('<!-- site-head -->',()=>`<meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0b1728"><meta name="description" content="${e(page.description)}"><title>${e(title)}</title><meta property="og:title" content="${e(title)}"><meta property="og:description" content="${e(page.description)}"><meta property="og:type" content="website"><meta property="og:site_name" content="${teamName}"><meta property="og:locale" content="${t('tr_TR', 'en_GB')}"><meta property="og:locale:alternate" content="${t('en_GB', 'tr_TR')}"><meta name="twitter:card" content="${ogImage ? 'summary_large_image' : 'summary'}">${noindex ? '<meta name="robots" content="noindex, follow">':''}${canonical&&!noindex ? `<link rel="canonical" href="${e(canonical)}"><meta property="og:url" content="${e(canonical)}">`:''}${ogImage ? `<meta property="og:image" content="${e(ogImage)}">`:''}${structuredData}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/logo.png"><link rel="manifest" href="/manifest.webmanifest"><link rel="preload" href="/assets/fonts/e4af272ccee01ff0-s.p.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/fonts/reference-fonts.css"><link rel="stylesheet" href="/styles.css">`)
     .replace('<meta charset="UTF-8">', () => `<meta charset="UTF-8"><script>${loaderBootstrap}</script>`)
     .replace('<!-- site-header -->',()=>siteHeader(page))
     .replace('<link rel="stylesheet" href="/styles.css">', '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/content-extras.css"><link rel="stylesheet" href="/redesign.css"><link rel="stylesheet" href="/page-redesign.css"><link rel="stylesheet" href="/page-loader.css">')
     .replace('<!-- site-content -->',()=>pageLinks(home ? page.body() : `<header class="page-heading${['support', 'sponsors', 'contact'].includes(page.kind) ? ' page-heading-compact' : ''}"><nav class="breadcrumb" aria-label="${t('Sayfa yolu', 'Breadcrumb')}"><a href="/">${t('Ana sayfa', 'Home')}</a><span aria-hidden="true">/</span><span>${e(page.title)}</span></nav><h1>${e(page.title)}</h1>${pageIntroduction(page)}</header>${page.body()}`, lang))
     .replace('<!-- site-footer -->',()=>siteFooter(lang))
-    .replace('</head>', () => `${alternates}</head>`)
-    .replace('content="tr_TR"', `content="${t('tr_TR', 'en_GB')}"`);
+    .replace('</head>', () => `${alternates}</head>`);
 }

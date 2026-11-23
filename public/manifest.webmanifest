@@ -1,0 +1,22 @@
+{
+  "name": "AIR FORCE #12414 | Ankara İstech Robotics",
+  "short_name": "AIR FORCE 12414",
+  "description": "İSTEK Ankara Okulları FIRST Robotics Competition takımı AIR FORCE #12414.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1728",
+  "theme_color": "#0b1728",
+  "icons": [
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

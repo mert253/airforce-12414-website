@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { selectUpcomingEvent, formatContentDate, isCalendarDate } from './season-utils.js';
+import { selectUpcomingEvent, formatContentDate, isCalendarDate, getEventCountdown } from './season-utils.js';
 
 test('season promotes the nearest published event and excludes expired or invalid dates', () => {
   const upcoming = { status: 'published', title: 'Ankara', startDate: '2027-03-19', endDate: '2027-03-21' };
@@ -28,3 +28,21 @@ test('display dates reject invalid calendar dates and preserve Turkish month nam
   assert.equal(formatContentDate('2026-11-16'), '16 Kasım 2026');
   assert.equal(formatContentDate('<invalid>'), '');
 });
+
+test('event countdown computes upcoming, live and ended states in Istanbul time', () => {
+  assert.deepEqual(
+    getEventCountdown('2027-03-19', '2027-03-21', new Date('2027-03-17T20:59:59+03:00')),
+    { state: 'upcoming', days: 1, hours: 3, minutes: 0, seconds: 1 },
+  );
+  assert.deepEqual(
+    getEventCountdown('2027-03-19', '2027-03-21', new Date('2027-03-19T00:00:00+03:00')),
+    { state: 'live', days: 0, hours: 0, minutes: 0, seconds: 0 },
+  );
+  assert.deepEqual(
+    getEventCountdown('2027-03-19', '2027-03-21', new Date('2027-03-22T00:00:00+03:00')),
+    { state: 'ended', days: 0, hours: 0, minutes: 0, seconds: 0 },
+  );
+  assert.equal(getEventCountdown('2027-03-21', '2027-03-19', new Date()), null);
+  assert.equal(getEventCountdown('invalid', '2027-03-21', new Date()), null);
+});
+

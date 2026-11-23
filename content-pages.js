@@ -32,8 +32,13 @@ function icon(type = 'camera') {
     mail: '<rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 6 9 7 9-7"/>',
     play: '<circle cx="12" cy="12" r="10"/><path d="m10 8 6 4-6 4Z"/>',
     calendar: '<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M7 2v6m10-6v6M3 11h18"/>',
+    copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
   };
   return `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">${shape[type] || shape.camera}</svg>`;
+}
+function copyEmailControl(email, t) {
+  if (!email) return '';
+  return `<span class="copy-email-wrap"><button type="button" class="copy-email-btn" data-copy-email="${e(email)}" aria-label="${e(t('E-posta adresini kopyala', 'Copy email address'))}">${icon('copy')}<span>${t('Kopyala', 'Copy')}</span></button><span class="sr-only" role="status" aria-live="polite" data-copy-status></span></span>`;
 }
 function image(source, alt, width = 1600, height = 1000, className = '', position = '') {
   const src = safeImageSrc(source);
@@ -246,6 +251,7 @@ function robots({ content, t, lang }) {
       <p class="eyebrow">${t('Yaklaşan etkinlik', 'Upcoming event')}</p><h3>${e(event.title)}</h3>
       <p class="af-event-date">${e(event.date)}</p>
       <p class="af-event-location">${e(event.location)}</p>
+      <div class="event-countdown" data-countdown-start="${e(event.startDate)}" data-countdown-end="${e(event.endDate)}" aria-live="off" hidden></div>
       ${anchor(t('FIRST etkinlik sayfası', 'FIRST event page'), event.url, 'button button-gold', true)}
     </aside>` : `<aside class="af-season-reference" data-reveal><p class="eyebrow">${t('Yarışma takvimi', 'Competition schedule')}</p><h3>${t('Yaklaşan etkinlik kaydı yok', 'No upcoming events listed')}</h3><p>${t('Takımın resmî etkinlik kayıtlarını FIRST üzerinden inceleyebilirsiniz.', 'Visit FIRST for the team’s official event listings.')}</p>${anchor(t('FIRST takım profili', 'FIRST team profile'), content.firstProfile, 'text-link', true)}</aside>`}
   </section>
@@ -428,7 +434,7 @@ function support({ content, t }) {
   return `<section class="section support-intro">
     <p class="lead">${t('İlk FRC sezonumuz için robot parçaları, üretim hizmetleri ve yarışma giderleri konusunda desteğe ihtiyacımız var.', 'For our first FRC season, we’re looking for help with robot parts, fabrication and competition expenses.')}</p>
     <div class="entry-actions">${anchor(t('Sponsorluk için yazın', 'Email us about sponsorship'), mailto, 'button button-gold')}${documentLink}</div>
-    <p class="support-email">${e(content.email)}</p>
+    <p class="support-email"><span>${e(content.email)}</span>${content.emailIsPlaceholder ? '' : copyEmailControl(content.email, t)}</p>
   </section>
   ${needs.length ? `<section class="section support-needs" aria-labelledby="support-needs-title">
     <h2 class="section-heading" id="support-needs-title">${t('Destek alanları', 'Ways to help')}</h2>
@@ -447,7 +453,7 @@ function contact({ content, t }) {
   return `<section class="section"><p class="lead">${t('Takım, projeler ve sponsorluk hakkında e-posta veya Instagram üzerinden bize ulaşabilirsiniz.', 'Contact us by email or Instagram about the team, our projects or sponsorship.')}</p>
     <div class="contact-grid">
       <article class="contact-card"><h2>${t('E-posta', 'Email')}</h2>
-        ${content.emailIsPlaceholder ? para(content.email) : anchor(content.email, `mailto:${content.email}`, 'contact-value')}
+        <div class="contact-email-row">${content.emailIsPlaceholder ? para(content.email) : anchor(content.email, `mailto:${content.email}`, 'contact-value') + copyEmailControl(content.email, t)}</div>
       </article>
       <article class="contact-card"><h2>Instagram</h2>
         ${anchor('@airforce12414', content.instagram, 'contact-value', true)}

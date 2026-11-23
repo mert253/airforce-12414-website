@@ -1,5 +1,6 @@
 import { matchesCollectionItem } from './collection-utils.js';
 import { installPageTransitions } from './page-transitions.js';
+import { getEventCountdown } from './season-utils.js';
 
 installPageTransitions();
 
@@ -9,12 +10,30 @@ const messages = document.documentElement.lang === 'en' ? {
   close: 'Close',
   closeMenu: 'Close menu',
   publishedItems: count => `${count} published ${count === 1 ? 'item' : 'items'}`,
+  copy: 'Copy',
+  copied: 'Copied',
+  copiedAnnouncement: 'Email address copied to clipboard.',
+  copyFailed: 'Could not copy email address.',
+  countdownDays: 'Days',
+  countdownHours: 'Hours',
+  countdownMinutes: 'Min',
+  countdownSeconds: 'Sec',
+  eventLive: 'Event in progress',
 } : {
   menu: 'Menü',
   openMenu: 'Menüyü aç',
   close: 'Kapat',
   closeMenu: 'Menüyü kapat',
   publishedItems: count => `${count} yayımlanmış içerik`,
+  copy: 'Kopyala',
+  copied: 'Kopyalandı',
+  copiedAnnouncement: 'E-posta adresi panoya kopyalandı.',
+  copyFailed: 'E-posta adresi kopyalanamadı.',
+  countdownDays: 'Gün',
+  countdownHours: 'Saat',
+  countdownMinutes: 'Dk',
+  countdownSeconds: 'Sn',
+  eventLive: 'Etkinlik devam ediyor',
 };
 
 // Hide the photo slot if the team photo fails to load.
@@ -190,3 +209,126 @@ if (dialog && galleryLinks.length && typeof dialog.showModal === 'function') {
   });
   dialog.addEventListener('close', () => { trigger?.focus(); photo.removeAttribute('src'); });
 }
+
+// Live countdown for upcoming FRC events (progressively enhanced, pauses when tab is hidden).
+const countdownElements = [...document.querySelectorAll('[data-countdown-start][data-countdown-end]')];
+if (countdownElements.length) {
+  const pad = value => String(value).padStart(2, '0');
+  let countdownTimer = 0;
+  function buildUnit(value, label) {
+    const unit = document.createElement('span');
+    unit.className = 'countdown-unit';
+    const num = document.createElement('strong');
+    num.textContent = value;
+    const text = document.createElement('small');
+    text.textContent = label;
+    unit.append(num, text);
+    return unit;
+  }
+  function updateCountdowns() {
+    let hasUpcoming = false;
+    const now = new Date();
+    for (const el of countdownElements) {
+      const state = getEventCountdown(el.dataset.countdownStart, el.dataset.countdownEnd, now);
+      if (!state || state.state === 'ended') {
+        el.hidden = true;
+        continue;
+      }
+      el.hidden = false;
+      el.textContent = '';
+      if (state.state === 'live') {
+        const badge = document.createElement('span');
+        badge.className = 'countdown-live';
+        badge.textContent = messages.eventLive;
+        el.append(badge);
+      } else {
+        hasUpcoming = true;
+        el.append(
+          buildUnit(String(state.days), messages.countdownDays),
+          buildUnit(pad(state.hours), messages.countdownHours),
+          buildUnit(pad(state.minutes), messages.countdownMinutes),
+          buildUnit(pad(state.seconds), messages.countdownSeconds),
+        );
+      }
+    }
+    return hasUpcoming;
+  }
+  function stopCountdown() {
+    if (countdownTimer) {
+      window.clearInterval(countdownTimer);
+      countdownTimer = 0;
+    }
+  }
+  function startCountdown() {
+    stopCountdown();
+    if (document.hidden) return;
+    if (updateCountdowns()) {
+      countdownTimer = window.setInterval(() => {
+        if (!updateCountdowns()) stopCountdown();
+      }, 1000);
+    }
+  }
+  startCountdown();
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopCountdown();
+    else startCountdown();
+  });
+  window.addEventListener('pagehide', stopCountdown);
+}
+
+// One-click email copy with accessible confirmation.
+async function copyText(text) {
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    await navigator.clipboard.writeText(text);
+    return true;
+  }
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.append(textarea);
+  textarea.select();
+  const ok = document.execCommand('copy');
+  textarea.remove();
+  return ok;
+}
+document.querySelectorAll('[data-copy-email]').forEach(button => {
+  let resetTimer = 0;
+  button.addEventListener('click', async () => {
+    const email = button.dataset.copyEmail;
+    if (!email) return;
+    const label = button.querySelector('span');
+    const statusEl = button.parentElement?.querySelector('[data-copy-status]');
+    try {
+      const ok = await copyText(email);
+      if (!ok) throw new Error('copy failed');
+      button.classList.add('is-copied');
+      if (label) label.textContent = messages.copied;
+      if (statusEl) statusEl.textContent = messages.copiedAnnouncement;
+      window.clearTimeout(resetTimer);
+      resetTimer = window.setTimeout(() => {
+        button.classList.remove('is-copied');
+        if (label) label.textContent = messages.copy;
+        if (statusEl) statusEl.textContent = '';
+      }, 2200);
+    } catch {
+      if (statusEl) statusEl.textContent = messages.copyFailed;
+    }
+  });
+});
+
+// Subtle floating back-to-top button once the visitor scrolls down.
+const backToTop = document.querySelector('[data-back-to-top]');
+if (backToTop) {
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function syncBackToTop() {
+    backToTop.hidden = window.scrollY < 420;
+  }
+  syncBackToTop();
+  window.addEventListener('scroll', syncBackToTop, { passive: true });
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+  });
+}
+

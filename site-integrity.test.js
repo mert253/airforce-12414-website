@@ -85,9 +85,11 @@ test('language switch links every page to its equivalent and English navigation 
   }
 });
 
-test('both languages hide draft work areas and the empty resource library from navigation', () => {
-  assert.doesNotMatch(rendered.get('/takim/'), /id="calisma-alanlari"/);
-  assert.doesNotMatch(rendered.get('/en/team/'), /id="calisma-alanlari"/);
+test('both languages expose published work areas while keeping empty resource library hidden from navigation', () => {
+  assert.match(rendered.get('/takim/'), /id="calisma-alanlari"/);
+  assert.match(rendered.get('/takim/'), /Mekanik/);
+  assert.match(rendered.get('/en/team/'), /id="calisma-alanlari"/);
+  assert.match(rendered.get('/en/team/'), /Mechanical/);
   assert.doesNotMatch(rendered.get('/'), /href="\/kaynaklar\/"/);
   assert.doesNotMatch(rendered.get('/en/'), /href="\/en\/resources\/"/);
 });
@@ -148,3 +150,33 @@ test('adding the supplied team photo exposes it in home, team and gallery withou
     assert(englishHome.indexOf('data-team-photo') < englishHome.indexOf('id="sezon"'));
   } finally { siteConfig.teamPhoto = original.photo; siteConfig.teamPhotoAlt = original.alt; }
 });
+
+test('pages emit enriched JSON-LD schemas, manifest, og:locale:alternate, countdown, copy-email and back-to-top', () => {
+  const home = rendered.get('/');
+  const homeEn = rendered.get('/en/');
+  const robots = rendered.get('/robotlar/');
+  const contact = rendered.get('/iletisim/');
+  const contactEn = rendered.get('/en/contact/');
+  const support = rendered.get('/destek-ol/');
+
+  assert.match(home, /rel="manifest" href="\/manifest\.webmanifest"/);
+  assert.match(home, /property="og:locale" content="tr_TR"/);
+  assert.match(home, /property="og:locale:alternate" content="en_GB"/);
+  assert.match(homeEn, /property="og:locale" content="en_GB"/);
+  assert.match(homeEn, /property="og:locale:alternate" content="tr_TR"/);
+
+  assert.match(home, /"@type":"Organization"/);
+  assert.match(home, /"@type":"Event"/);
+  assert.match(robots, /"@type":"BreadcrumbList"/);
+  assert.match(robots, /"@type":"Event"/);
+  assert.match(contact, /"@type":"FAQPage"/);
+  assert.match(contactEn, /"@type":"FAQPage"/);
+  assert.match(contactEn, /What is AIR FORCE #12414\?/);
+
+  assert.match(home, /data-countdown-start="2027-03-19" data-countdown-end="2027-03-21"/);
+  assert.match(robots, /data-countdown-start="2027-03-19" data-countdown-end="2027-03-21"/);
+  assert.match(contact, /data-copy-email="airforce@istek\.k12\.tr"/);
+  assert.match(support, /data-copy-email="airforce@istek\.k12\.tr"/);
+  assert.match(home, /data-back-to-top/);
+});
+

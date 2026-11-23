@@ -111,3 +111,40 @@ img[src*='istek-okullari'] { padding: 14px; background: var(--navy); border-radi
   .filter-options { width: 100%; }
   .page .section-heading { flex-wrap: wrap; }
 }
+
+/* Live event countdown */
+.event-countdown { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.countdown-unit { display: flex; flex-direction: column; align-items: center; min-width: 62px; padding: 10px 12px; border: 1px solid var(--dark-line); border-radius: 3px; background: rgb(255 255 255 / 4%); }
+.countdown-unit strong { font-family: 'Barlow Condensed', Inter, sans-serif; font-size: 28px; font-weight: 700; line-height: 1; color: var(--gold); font-variant-numeric: tabular-nums; }
+.countdown-unit small { margin-top: 4px; font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; color: #b6c3d2; }
+.af-event-panel .countdown-unit { border-color: var(--line); background: var(--paper); }
+.af-event-panel .countdown-unit strong { color: var(--navy); }
+.af-event-panel .countdown-unit small { color: var(--muted); }
+.countdown-live { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 2px; background: var(--gold); color: var(--navy); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+/* Copy email control */
+.contact-email-row, .footer-email-row, .support-email { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.copy-email-wrap { display: inline-flex; align-items: center; }
+.copy-email-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 3px; background: var(--paper); color: var(--ink); font-size: 12px; font-weight: 650; transition: border-color .2s, background .2s, color .2s; }
+.copy-email-btn svg { width: 15px; height: 15px; }
+.copy-email-btn:hover { border-color: var(--gold-ink); color: var(--gold-ink); }
+.copy-email-btn.is-copied { border-color: var(--navy); background: var(--navy); color: var(--gold); }
+.copy-email-btn--dark { border-color: var(--dark-line); background: transparent; color: var(--silver); min-height: 32px; padding: 4px 10px; }
+.copy-email-btn--dark:hover { border-color: var(--gold); color: var(--gold); }
+.copy-email-btn--dark.is-copied { border-color: var(--gold); background: var(--gold); color: var(--navy); }
+
+/* Floating back-to-top button */
+.back-to-top { position: fixed; right: clamp(16px, 3vw, 28px); bottom: clamp(16px, 3vw, 28px); z-index: 40; display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border: 1px solid var(--dark-line); border-radius: 3px; background: var(--navy); color: var(--gold); box-shadow: 0 10px 24px rgb(8 24 44 / 28%); transition: background .2s, border-color .2s, transform .2s; }
+.back-to-top:hover { background: var(--navy-light); border-color: var(--gold); transform: translateY(-2px); }
+.back-to-top svg { width: 20px; height: 20px; }
+
+/* Clean print layout for sponsorship, team and contact pages */
+@media print {
+  .site-header, .site-footer, .page-loader, .back-to-top, .copy-email-wrap, .section-nav, .gallery-nav, .skip-link, .lightbox, .event-countdown { display: none !important; }
+  :root, body { background: #fff !important; color: #000 !important; }
+  .hero, .home-season-feature, .af-event-panel { background: #fff !important; color: #000 !important; border: 1px solid #ccc; }
+  .hero-description, .season-feature-body > p, .season-event .season-location { color: #222 !important; }
+  a { text-decoration: underline; }
+  .section { break-inside: avoid; }
+}
+

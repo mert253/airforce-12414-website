@@ -4,6 +4,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { defineConfig } from 'vite';
 import { pages, renderPage } from './site-pages.js';
+import { siteConfig } from './site-config.js';
+import { generateRobotsTxt, generateSitemapXml } from './seo-utils.js';
 
 // Every published detail receives the same shell automatically on build/restart.
 const pageShell = `<!doctype html>
@@ -51,6 +53,20 @@ export default defineConfig({
   plugins: [{
     name: 'air-force-pages',
     configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        if (request.url === '/robots.txt') {
+          response.setHeader('Content-Type', 'text/plain; charset=utf-8');
+          return response.end(generateRobotsTxt(siteConfig.siteUrl));
+        }
+        if (request.url === '/sitemap.xml') {
+          const xml = generateSitemapXml(pages, siteConfig.siteUrl);
+          if (xml) {
+            response.setHeader('Content-Type', 'application/xml; charset=utf-8');
+            return response.end(xml);
+          }
+        }
+        next();
+      });
       server.middlewares.use(notFoundMiddleware(async (file) => {
         const template = await readFile(resolve(server.config.root, file), 'utf8');
         return server.transformIndexHtml(`/${file}`, template);
@@ -66,6 +82,11 @@ export default defineConfig({
         const page = pages.find(({ file }) => resolve(import.meta.dirname, file) === resolve(context.filename));
         return page ? renderPage(html, page) : html;
       },
+    },
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'robots.txt', source: generateRobotsTxt(siteConfig.siteUrl) });
+      const sitemap = generateSitemapXml(pages, siteConfig.siteUrl);
+      if (sitemap) this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: sitemap });
     },
   }],
   build: {

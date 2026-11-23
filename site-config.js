@@ -11,7 +11,7 @@ export const siteConfig = {
   season: {
     year: 2027,
     status: "Sezon hazırlıkları",
-    updatedAt: "2026-11-16",
+    updatedAt: "2026-11-23",
     description: "İlk FIRST Robotics Competition sezonumuz için hazırlanıyoruz.",
   },
   firstProfile: "https://frc-events.firstinspires.org/2027/team/12414",
@@ -32,7 +32,7 @@ export const siteConfig = {
   mentors: [],
   subteams: [
     {
-      status: "draft",
+      status: "published",
       name: "Mekanik",
       description: "Robotun şasisini ve mekanizmalarını tasarlar, parçaları üretir ve montajı yapar.",
       en: {
@@ -41,7 +41,7 @@ export const siteConfig = {
       },
     },
     {
-      status: "draft",
+      status: "published",
       name: "Yazılım",
       description: "Sürücü kontrollerini, otonom hareketleri ve sensörlerden gelen verileri işleyen kodu yazar ve test eder.",
       en: {
@@ -50,7 +50,7 @@ export const siteConfig = {
       },
     },
     {
-      status: "draft",
+      status: "published",
       name: "Elektrik",
       description: "Güç dağıtımını planlar, motor ve sensör bağlantılarını yapar ve kabloları kontrol eder.",
       en: {
@@ -59,7 +59,7 @@ export const siteConfig = {
       },
     },
     {
-      status: "draft",
+      status: "published",
       name: "Proje yönetimi",
       description: "Görevleri ve takvimi takip eder, malzeme ihtiyaçlarını koordine eder ve ekipler arasındaki iletişimi yürütür.",
       en: {
@@ -135,7 +135,53 @@ export const siteConfig = {
       },
     },
   ],
-  faq: [],
+  faq: [
+    {
+      status: "published",
+      question: "AIR FORCE #12414 nedir?",
+      answer: "AIR FORCE #12414 (Ankara İstech Robotics Force), İSTEK Ankara Okulları bünyesinde kurulan ve 2027 sezonunda ilk kez FIRST Robotics Competition’da yarışmaya hazırlanan lise robotik takımıdır.",
+      en: {
+        question: "What is AIR FORCE #12414?",
+        answer: "AIR FORCE #12414 (Ankara İstech Robotics Force) is the high school robotics team of İSTEK Ankara Schools, preparing to compete in our first FIRST Robotics Competition season in 2027.",
+      },
+    },
+    {
+      status: "published",
+      question: "FIRST Robotics Competition (FRC) nasıl bir yarışmadır?",
+      answer: "FRC, lise öğrencilerinin mentorlarıyla birlikte her sezon açıklanan yeni bir mühendislik problemi için endüstriyel ölçekte robot tasarladığı, ürettiği, programladığı ve sahada ittifaklar halinde yarıştığı uluslararası bir robotik programıdır.",
+      en: {
+        question: "What is FIRST Robotics Competition (FRC)?",
+        answer: "FRC is an international robotics program where high school students work alongside mentors to design, build, and program industrial-scale robots for a new engineering challenge each season, competing on the field in alliances.",
+      },
+    },
+    {
+      status: "published",
+      question: "İlk yarışmanız ne zaman ve nerede?",
+      answer: "2027 sezonundaki ilk etkinliğimiz 19–21 Mart 2027 tarihlerinde Ankara’da, ODTÜ GVO Lisesi Spor Salonu’nda düzenlenecek olan Ankara Regional’dır.",
+      en: {
+        question: "When and where is your first competition?",
+        answer: "Our first event of the 2027 season is the Ankara Regional, taking place on March 19–21, 2027 at ODTÜ GVO High School Sports Hall in Çankaya, Ankara.",
+      },
+    },
+    {
+      status: "published",
+      question: "Takıma nasıl sponsor veya destek olabiliriz?",
+      answer: "Robot parçaları, atölye ekipmanları, üretim/imalat hizmetleri, teknik danışmanlık veya yarışma ve ulaşım giderleri için destek sağlayabilirsiniz. Destek seçeneklerini Destek olun sayfamızda inceleyebilir ve airforce@istek.k12.tr adresinden bize ulaşabilirsiniz.",
+      en: {
+        question: "How can we sponsor or support the team?",
+        answer: "You can support us with robot parts, workshop equipment, fabrication services, technical mentoring, or competition and travel expenses. See our Support the team page or email us at airforce@istek.k12.tr.",
+      },
+    },
+    {
+      status: "published",
+      question: "Takımın çalışmalarını nasıl takip edebiliriz?",
+      answer: "Güncel sezon durumumuzu ve yarışma takvimimizi bu siteden, atölye ve etkinlik paylaşımlarımızı ise Instagram’daki @airforce12414 hesabımızdan takip edebilirsiniz.",
+      en: {
+        question: "How can we follow the team’s progress?",
+        answer: "You can follow our season status and competition schedule right here on our website, and see updates from the workshop and events on Instagram at @airforce12414.",
+      },
+    },
+  ],
 
   en: {
     school: { name: "İSTEK Ankara Schools" },
