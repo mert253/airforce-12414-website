@@ -160,7 +160,7 @@ test('pages emit enriched JSON-LD schemas, manifest, og:locale:alternate, countd
   const contactEn = rendered.get('/en/contact/');
   const support = rendered.get('/destek-ol/');
 
-  assert.match(home, /rel="manifest" href="\/manifest\.webmanifest"/);
+  assert.match(home, /rel="manifest" href="\/manifest\.webmanifest\?v=2"/);
   assert.match(home, /property="og:locale" content="tr_TR"/);
   assert.match(home, /property="og:locale:alternate" content="en_GB"/);
   assert.match(homeEn, /property="og:locale" content="en_GB"/);
@@ -191,7 +191,7 @@ test('production URL drives canonical, absolute hreflang, share image and sitema
   for (const [path, html] of rendered) for (const ref of html.matchAll(new RegExp('(?:src|href)="(/assets/[^"?#]+)"', 'g')))
     assert.ok(existsSync(resolve(root, 'public', ref[1].slice(1))), `${path} references missing ${ref[1]}`);
   const manifest = JSON.parse(readFileSync(resolve(root, 'public/manifest.webmanifest'), 'utf8'));
-  for (const icon of manifest.icons) assert.ok(existsSync(resolve(root, 'public', icon.src.slice(1))), icon.src);
+  for (const icon of manifest.icons) assert.ok(existsSync(resolve(root, 'public', icon.src.split('?')[0].slice(1))), icon.src);
 });
 
 test('sponsor pages use the same names everywhere and the domain aliases redirect to .com', () => {
@@ -284,4 +284,38 @@ test('home folds the FRC explainer into the season block and shows at most three
     assert.match(news, /href="\/gunluk\/"/);
     assert.doesNotMatch(news, /\/haberler\//);
   } finally { siteConfig.news = previous; }
+});
+
+test('every TR and EN page uses the Pegasus icon set with a cache version, at the right pixel sizes', () => {
+  const png = (file) => {
+    const bytes = readFileSync(resolve(root, 'public', file));
+    assert.equal(bytes.subarray(1, 4).toString(), 'PNG', file);
+    return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)];
+  };
+  const expected = {
+    'assets/favicon-16.png': [16, 16],
+    'assets/favicon-32.png': [32, 32],
+    'assets/apple-touch-icon.png': [180, 180],
+    'assets/icon-192.png': [192, 192],
+    'assets/icon-512.png': [512, 512],
+  };
+  for (const [file, size] of Object.entries(expected)) assert.deepEqual(png(file), size, file);
+  const ico = readFileSync(resolve(root, 'public/favicon.ico'));
+  assert.equal(ico.readUInt16LE(0), 0);
+  assert.equal(ico.readUInt16LE(2), 1);
+  assert.ok(ico.readUInt16LE(4) >= 2, 'favicon.ico holds several sizes');
+  assert.ok(!existsSync(resolve(root, 'public/assets/favicon.svg')), 'the old AF favicon is gone');
+  for (const [path, html] of rendered) {
+    for (const link of [
+      '<link rel="icon" href="/favicon.ico?v=2" sizes="48x48">',
+      '<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">',
+      '<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2">',
+      '<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">',
+      '<link rel="manifest" href="/manifest.webmanifest?v=2">',
+    ]) assert.ok(html.includes(link), `${path} lacks ${link}`);
+    assert.ok(!html.includes('favicon.svg'), `${path} still links the old favicon`);
+  }
+  const manifest = JSON.parse(readFileSync(resolve(root, 'public/manifest.webmanifest'), 'utf8'));
+  assert.deepEqual(manifest.icons.map(icon => icon.sizes), ['192x192', '512x512']);
+  assert.ok(manifest.icons.every(icon => icon.src.endsWith('?v=2')));
 });
