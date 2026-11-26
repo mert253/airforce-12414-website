@@ -86,7 +86,10 @@ img[src*='istek-okullari'] { padding: 14px; background: var(--navy); border-radi
 .gallery-nav a { display: inline-flex; align-items: center; min-height: 48px; border-bottom: 2px solid transparent; font-size: 14px; font-weight: 650; }
 .gallery-nav a:hover, .gallery-nav a[aria-current='page'] { color: var(--gold-ink); }
 .gallery-nav a[aria-current='page'] { border-bottom-color: var(--gold-ink); }
-.project-album + .project-album { border-top: 1px solid var(--line); }
+.project-album + .project-album, .photo-album + .photo-album { border-top: 1px solid var(--line); }
+.support-context { margin-top: 14px; max-width: 62ch; }
+.contact-grid + .contact-callout { margin-top: 28px; }
+.event-row .entry-actions { flex: 0 0 auto; }
 .project-album-heading { margin-bottom: 24px; }
 .project-album-heading > .text-link { flex-shrink: 0; }
 .accordion > summary > span[aria-hidden] { display: none; }

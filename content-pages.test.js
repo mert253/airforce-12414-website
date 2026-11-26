@@ -1,3 +1,4 @@
+import './test-clock.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { siteConfig } from './site-config.js';
@@ -28,7 +29,7 @@ test('project gallery shows only published project photos and keeps them out of 
     assert.doesNotMatch(renderContent('projectGallery'), /data-gallery-image|data-search/);
   } finally { Object.assign(siteConfig, previous); }
 });
-import { renderContent, publishedRecords, safeHref, safeImageSrc, safeObjectPosition, contentRoutes, buildContentRoutes } from './content-pages.js';
+import { journalCategory, journalCategories, renderContent, publishedRecords, safeHref, safeImageSrc, safeObjectPosition, contentRoutes, buildContentRoutes } from './content-pages.js';
 
 test('draft and statusless records never enter public collections', () => {
   const items = [{ status: 'draft', title: 'Private' }, { title: 'Unreviewed' }, { status: 'published', title: 'Public' }];
@@ -70,7 +71,7 @@ test('detail routes are generated only for published valid slugs', async () => {
       { status: 'published', slug: '../outside', title: 'Invalid' },
     ];
     const module = await import(`./content-pages.js?route-test=${Date.now()}`);
-    assert(module.contentRoutes.some(route => route.path === '/haberler/atolye-gunlugu/' && route.item.title === 'Atölye günlüğü'));
+    assert(module.contentRoutes.some(route => route.path === '/gunluk/atolye-gunlugu/' && route.item.title === 'Atölye günlüğü'));
     assert(!module.contentRoutes.some(route => route.path.includes('private-story') || route.path.includes('outside')));
   } finally { siteConfig.news = previous; }
 });
@@ -83,16 +84,17 @@ test('unfilled robot page shows the season update without empty technical sectio
 });
 
 test('empty archives show a truthful explanation and navigation without controls or dummy cards', () => {
-  const previous = siteConfig.resources;
+  const previous = siteConfig.resources, previousEvents = siteConfig.events;
   try {
     siteConfig.resources = [];
-    for (const kind of ['history', 'awards', 'impact', 'resources', 'news', 'gallery']) {
+    siteConfig.events = [];
+    for (const kind of ['history', 'awards', 'impact', 'resources', 'events', 'news', 'gallery']) {
       const html = renderContent(kind);
       assert.match(html, /henüz yayımlanmadı/, kind);
       assert.match(html, /<a[^>]*href="[^\"]+"/, kind);
       assert.doesNotMatch(html, /data-filter|data-search|data-collection|data-placeholder-item|hazırlanıyor|class="(?:archive-card|content-card|gallery-card)/, kind);
     }
-  } finally { siteConfig.resources = previous; }
+  } finally { siteConfig.resources = previous; siteConfig.events = previousEvents; }
 });
 
 test('all base content pages render with unique routes', () => {
@@ -174,7 +176,7 @@ test('missing years never appear as undefined or empty archive filters', () => {
 
 test('empty archives are noindex while the main information pages remain indexable', () => {
   const routes = buildContentRoutes({});
-  for (const kind of ['history', 'awards', 'robot', 'impact', 'resources', 'news', 'gallery']) {
+  for (const kind of ['history', 'awards', 'robot', 'impact', 'resources', 'events', 'news', 'gallery']) {
     assert.equal(routes.find(route => route.kind === kind).noindex, true, kind);
   }
   for (const kind of ['team', 'robots', 'frc', 'contact', 'support', 'sponsors']) {
@@ -189,6 +191,7 @@ test('archives become indexable only when usable records are published', () => {
     ['robot', 'robots', { name: 'İlk robot', slug: 'ilk-robot' }],
     ['impact', 'projects', { title: 'Proje kaydı', slug: 'proje-kaydi' }],
     ['resources', 'resources', { title: 'Kaynak kaydı', url: '/assets/guide.pdf' }],
+    ['events', 'events', { title: 'Etkinlik kaydı', slug: 'etkinlik-kaydi' }],
     ['news', 'news', { title: 'Haber kaydı', slug: 'haber-kaydi' }],
     ['gallery', 'gallery', { src: '/assets/photo.webp', alt: 'Takım fotoğrafı' }],
   ];
@@ -203,21 +206,21 @@ test('archives become indexable only when usable records are published', () => {
     awards: [{ status: 'published' }],
     resources: [{ status: 'published', title: 'Unsafe', url: 'javascript:alert(1)' }],
     news: [{ status: 'published', title: 'Invalid slug', slug: '../invalid' }],
+    events: [{ status: 'published', title: ' ' }],
     gallery: [{ status: 'published', src: 'data:image/png,invalid' }],
     videos: [{ status: 'published', title: 'Unsafe', url: 'javascript:alert(1)' }],
   });
-  for (const kind of ['history', 'awards', 'resources', 'news', 'gallery']) assert.equal(invalid.find(route => route.kind === kind).noindex, true, kind);
+  for (const kind of ['history', 'awards', 'resources', 'events', 'news', 'gallery']) assert.equal(invalid.find(route => route.kind === kind).noindex, true, kind);
   assert.equal(buildContentRoutes({ teamPhoto: '/assets/team.webp' }).find(route => route.kind === 'gallery').noindex, false);
   assert.equal(buildContentRoutes({ videos: [{ status: 'published', title: 'Video', url: 'https://example.com/video' }] }).find(route => route.kind === 'gallery').noindex, false);
 });
 
-test('published archive records restore filters, detail links and gallery controls', () => {
+test('published archive records restore filters and detail links', () => {
   const fixtures = [
     ['awards', 'awards', { status: 'published', title: 'Public award', year: 2027, url: 'https://example.com/result' }, /href="https:\/\/example.com\/result"/],
     ['impact', 'projects', { status: 'published', slug: 'public-project', title: 'Public project', category: 'Eğitim' }, /href="\/toplumsal-etki\/public-project\/"/],
     ['resources', 'resources', { status: 'published', title: 'Public guide', topic: 'Yazılım', url: '/assets/guide.pdf' }, /href="\/assets\/guide.pdf"/],
-    ['news', 'news', { status: 'published', slug: 'public-news', title: 'Public news', category: 'Atölye' }, /href="\/haberler\/public-news\/"/],
-    ['gallery', 'gallery', { status: 'published', src: '/assets/photo.webp', alt: 'Public photo', category: 'Takım' }, /data-gallery-image/],
+    ['news', 'news', { status: 'published', slug: 'public-news', title: 'Public news', category: 'Atölye' }, /href="\/gunluk\/public-news\/"/],
   ];
   for (const [kind, collection, record, destination] of fixtures) {
     const previous = siteConfig[collection];
@@ -246,13 +249,12 @@ test('video-only gallery has a working video link and no empty photo tools', () 
 });
 
 test('sponsor and support pages share needs while preserving institution roles', () => {
-  const previous = { sponsorNeeds: siteConfig.sponsorNeeds, sponsorshipFile: siteConfig.sponsorshipFile };
+  const previous = { sponsorNeeds: siteConfig.sponsorNeeds };
   try {
     siteConfig.sponsorNeeds = [
       { title: 'Test malzeme', description: 'A & B', examples: ['Parça <örneği>'] },
       { title: 'Test hizmet', description: 'Üretim desteği' },
     ];
-    siteConfig.sponsorshipFile = '';
     const sponsors = renderContent('sponsors'), support = renderContent('support');
     for (const title of ['Test malzeme', 'Test hizmet']) {
       assert(sponsors.includes(title));
@@ -266,8 +268,6 @@ test('sponsor and support pages share needs while preserving institution roles',
     assert.match(support, /Parça &lt;örneği&gt;/);
     assert.match(support, /href="mailto:airforce@istek.k12.tr\?subject=AIR%20FORCE%2012414%20Sponsorluk"/);
     assert.doesNotMatch(support, /Sponsorluk dosyası|\.pdf|tanıtım detaylarını/);
-    siteConfig.sponsorshipFile = '/assets/sponsorship.pdf';
-    assert.match(renderContent('support'), /href="\/assets\/sponsorship.pdf"/);
   } finally { Object.assign(siteConfig, previous); }
 });
 
@@ -305,4 +305,237 @@ test('team sections require published people and work areas', () => {
     assert.match(html, /Public work area/);
     assert.doesNotMatch(html, /PRIVATE_PERSON/);
   } finally { Object.assign(siteConfig, previous); }
+});
+
+test('journal categories map to fixed TR/EN labels and fall back to the first one', () => {
+  assert.equal(journalCategory('Teknik', 'tr'), 'Teknik');
+  assert.equal(journalCategory('Teknik', 'en'), 'Technical');
+  assert.equal(journalCategory('Special days', 'tr'), 'Özel Günler');
+  assert.equal(journalCategory('', 'tr'), 'Takımdan');
+  assert.equal(journalCategory('Bilinmeyen', 'en'), 'From the team');
+  assert.equal(journalCategory(undefined, 'en'), 'From the team');
+});
+
+test('journal lists cards at /gunluk/ and orders filter buttons by the fixed category order', () => {
+  const previous = siteConfig.news;
+  try {
+    siteConfig.news = [
+      { status: 'published', slug: 'teknik-yazi', title: 'Teknik yazı', category: 'Teknik', date: '2026-11-01' },
+      { status: 'published', slug: 'takim-yazisi', title: 'Takım yazısı', category: 'Takımdan', date: '2026-10-01' },
+      { status: 'published', slug: 'serbest', title: 'Serbest yazı', category: 'Atölye', date: '2026-09-01' },
+    ];
+    const html = renderContent('news');
+    assert.match(html, /href="\/gunluk\/teknik-yazi\/"/);
+    assert.doesNotMatch(html, /\/haberler\//);
+    const filters = [...html.matchAll(/\sdata-filter="([^"]*)"/g)].map(match => match[1]);
+    assert.deepEqual(filters, ['all', 'Takımdan', 'Teknik']);
+    assert.match(html, /Yazı ara/);
+    const english = renderContent('news', undefined, 'en');
+    assert.deepEqual([...english.matchAll(/\sdata-filter="([^"]*)"/g)].map(match => match[1]), ['all', 'From the team', 'Technical']);
+    assert.equal(journalCategories.length, 4);
+  } finally { siteConfig.news = previous; }
+});
+
+test('event detail route exists with a parent breadcrumb and renders the official facts without invented sections', () => {
+  const route = contentRoutes.find(item => item.path === '/etkinlikler/ankara-regional/');
+  assert.equal(route.kind, 'event');
+  assert.equal(route.noindex, false);
+  assert.equal(route.parent.path, '/etkinlikler/');
+  const html = renderContent('event', route.item);
+  assert.match(html, /19–21 Mart 2027/);
+  assert.match(html, /ODTÜ GVO Lisesi Spor Salonu/);
+  assert.match(html, /href="https:\/\/frc-events\.firstinspires\.org\/2027\/TUAK"[^>]*target="_blank"/);
+  assert.match(html, /data-countdown-start="2027-03-19"/);
+  assert.doesNotMatch(html, /id="(?:program|sonuclar|fotograflar)"/);
+  assert.equal(buildContentRoutes({}).find(item => item.kind === 'event'), undefined);
+  const english = buildContentRoutes(siteConfig, 'en').find(item => item.kind === 'event');
+  assert.equal(english.parent.title, 'Events');
+  assert.match(english.description, /March 19–21, 2027/);
+});
+
+test('event detail shows published program, results and photos only and escapes text', () => {
+  const event = {
+    status: 'published', slug: 'test-etkinlik', title: 'Test etkinlik', date: '1 Nisan 2999', location: 'Salon <b>', url: 'https://example.com/event',
+    startDate: '2999-04-01', endDate: '2999-04-02', summary: 'A & B',
+    program: [
+      { status: 'published', date: '2999-04-01', time: '09:00', title: 'Açılış <i>', description: 'Kayıt' },
+      { status: 'draft', date: '2999-04-01', title: 'PRIVATE_PROGRAM' },
+      { status: 'published', title: '' },
+    ],
+    results: [
+      { status: 'published', label: 'Sıralama', result: '5.' },
+      { status: 'draft', label: 'PRIVATE_RESULT', result: 'x' },
+      { status: 'published', label: 'Boş', result: '' },
+    ],
+    photos: [
+      { status: 'published', src: '/assets/event-photo.webp', alt: 'Etkinlik fotoğrafı' },
+      { status: 'draft', src: '/assets/PRIVATE_EVENT_PHOTO.webp', alt: 'x' },
+    ],
+  };
+  const html = renderContent('event', event);
+  for (const id of ['program', 'sonuclar', 'fotograflar']) assert.match(html, new RegExp(`id="${id}"`));
+  assert.match(html, /class="section-nav"/);
+  assert.match(html, /Açılış &lt;i&gt;/);
+  assert.match(html, /Salon &lt;b&gt;/);
+  assert.match(html, /A &amp; B/);
+  assert.match(html, /event-photo\.webp/);
+  assert.doesNotMatch(html, /PRIVATE_|<i>|<b>/);
+  assert.match(renderContent('event', event, 'en'), /Event schedule/);
+});
+
+test('the same event slug published twice stops route generation', () => {
+  const event = { status: 'published', slug: 'ayni', title: 'Etkinlik' };
+  assert.throws(() => buildContentRoutes({ events: [event, { ...event }] }), /aynı slug.*ayni/);
+  assert.doesNotThrow(() => buildContentRoutes({ events: [event, { ...event, status: 'draft' }] }));
+});
+
+test('event list separates upcoming and past events and links to details only when a slug exists', () => {
+  const previous = siteConfig.events;
+  try {
+    siteConfig.events = [
+      { status: 'published', slug: 'gecmis-etkinlik', title: 'PAST_EVENT', startDate: '2000-01-01', endDate: '2000-01-02', url: 'https://example.com/past' },
+      { status: 'published', slug: 'gelecek-etkinlik', title: 'FUTURE_EVENT', startDate: '2999-01-01', endDate: '2999-01-02', url: 'https://example.com/future' },
+      { status: 'published', title: 'NO_SLUG_EVENT', startDate: '2999-02-01', endDate: '2999-02-02', url: 'https://example.com/noslug' },
+      { status: 'draft', slug: 'taslak', title: 'DRAFT_EVENT', startDate: '2999-03-01', endDate: '2999-03-02' },
+    ];
+    const html = renderContent('events');
+    assert.match(html, /id="yaklasan"/);
+    assert.match(html, /id="gecmis"/);
+    assert(html.indexOf('FUTURE_EVENT') < html.indexOf('PAST_EVENT'));
+    assert.match(html, /href="\/etkinlikler\/gelecek-etkinlik\/"/);
+    assert.doesNotMatch(html, /\/etkinlikler\/taslak\/|DRAFT_EVENT/);
+    const noSlug = html.slice(html.indexOf('NO_SLUG_EVENT'), html.indexOf('NO_SLUG_EVENT') + 600);
+    assert.match(noSlug, /href="https:\/\/example\.com\/noslug"/);
+    assert.doesNotMatch(noSlug.split('</article>')[0], /Etkinlik ayrıntıları/);
+  } finally { siteConfig.events = previous; }
+});
+
+test('season page links its event panel to the event detail page', () => {
+  assert.match(renderContent('robots'), /href="\/etkinlikler\/ankara-regional\/"/);
+});
+
+test('team gallery groups photos into albums without filters and lists event albums', () => {
+  const previous = { gallery: siteConfig.gallery, events: siteConfig.events, teamPhoto: siteConfig.teamPhoto };
+  const photo = { status: 'published', alt: 'Fotoğraf', width: 1600, height: 1000 };
+  try {
+    siteConfig.teamPhoto = '';
+    siteConfig.gallery = [
+      { ...photo, src: '/assets/a1.webp', album: 'Atölye' },
+      { ...photo, src: '/assets/a2.webp', album: 'Atölye' },
+      { ...photo, src: '/assets/b1.webp', category: 'Takım' },
+      { ...photo, status: 'draft', src: '/assets/PRIVATE_ALBUM.webp', album: 'Gizli' },
+    ];
+    siteConfig.events = [
+      { status: 'published', slug: 'ankara-regional', title: 'Ankara Regional', date: '19 Mart 2027', startDate: '2027-03-19', endDate: '2027-03-21', photos: [{ ...photo, src: '/assets/event-cover.webp' }, { ...photo, src: '/assets/event-2.webp' }] },
+      { status: 'draft', slug: 'taslak', title: 'DRAFT_EVENT', startDate: '2027-04-01', endDate: '2027-04-02', photos: [{ ...photo, src: '/assets/DRAFT_EVENT_PHOTO.webp' }] },
+      { status: 'published', slug: 'bos', title: 'EMPTY_ALBUM_EVENT', startDate: '2027-05-01', endDate: '2027-05-02', photos: [] },
+    ];
+    const html = renderContent('gallery');
+    assert.equal((html.match(/class="section photo-album"/g) || []).length, 2);
+    assert.match(html, /<h2 id="album-1">Atölye<\/h2>/);
+    assert.match(html, /<h2 id="album-2">Takım<\/h2>/);
+    assert.match(html, /id="etkinlik-albumleri"/);
+    assert.match(html, /class="card-media" href="\/etkinlikler\/ankara-regional\/#fotograflar" aria-label="Ankara Regional albümünü açın"/);
+    assert.match(html, /2 fotoğraf/);
+    assert.match(html, /class="section-nav"/);
+    assert.doesNotMatch(html, /filter-bar|search-input|data-collection|PRIVATE_ALBUM|DRAFT_EVENT|EMPTY_ALBUM_EVENT/);
+    assert.match(renderContent('gallery', undefined, 'en'), /Open album/);
+    assert.equal(buildContentRoutes({ events: [siteConfig.events[0]] }).find(route => route.kind === 'gallery').noindex, false);
+    assert.equal(buildContentRoutes({ events: [siteConfig.events[2]] }).find(route => route.kind === 'gallery').noindex, true);
+  } finally { Object.assign(siteConfig, previous); }
+});
+
+test('team gallery with a single album shows no section navigation', () => {
+  const previous = { gallery: siteConfig.gallery, events: siteConfig.events, teamPhoto: siteConfig.teamPhoto };
+  try {
+    siteConfig.teamPhoto = '';
+    siteConfig.events = [];
+    siteConfig.gallery = [{ status: 'published', src: '/assets/only.webp', alt: 'Tek fotoğraf' }];
+    const html = renderContent('gallery');
+    assert.doesNotMatch(html, /class="section-nav"|id="etkinlik-albumleri"/);
+    assert.match(html, /id="fotograflar"/);
+  } finally { Object.assign(siteConfig, previous); }
+});
+
+test('season page drops the empty section strip and keeps FRC and event links in the intro and panel', () => {
+  const previous = siteConfig.robots;
+  try {
+    siteConfig.robots = [];
+    const html = renderContent('robots');
+    assert.doesNotMatch(html, /class="section-nav"/);
+    const intro = html.match(/<div class="af-season-intro"[\s\S]*?<\/aside>/)[0];
+    assert.match(intro, /class="entry-actions"><a class="text-link" href="\/frc\/"/);
+    assert.match(intro, /href="\/etkinlikler\/ankara-regional\/"/);
+    assert.equal((html.match(/href="\/frc\/"/g) || []).length, 1);
+    siteConfig.robots = [{ status: 'published', slug: 'r-2027', name: 'Robot 2027', year: 2027 }];
+    assert.match(renderContent('robots'), /class="section-nav"/);
+  } finally { siteConfig.robots = previous; }
+});
+
+test('support page explains the first season from the upcoming event and adds no tiers or files', () => {
+  const html = renderContent('support');
+  assert.match(html, /class="support-context"/);
+  assert.match(html, /AIR FORCE #12414, 2027’de ilk FRC sezonuna çıkıyor; sezonun ilk etkinliği Ankara Regional \(19–21 Mart 2027, Ankara\)\./);
+  assert.match(html, /href="\/etkinlikler\/"/);
+  assert.doesNotMatch(html, /\.pdf|Katıl|seviye|paket/i);
+  const english = renderContent('support', undefined, 'en');
+  assert.match(english, /starting at the Ankara Regional \(March 19–21, 2027, Ankara\)\./);
+  const previous = siteConfig.events;
+  try {
+    siteConfig.events = [];
+    assert.doesNotMatch(renderContent('support'), /sezonun ilk etkinliği/);
+    assert.match(renderContent('support'), /ilk FRC sezonuna çıkıyor\./);
+  } finally { siteConfig.events = previous; }
+});
+
+test('contact page offers a sponsorship mailto with the subject line and links events to the calendar', () => {
+  const html = renderContent('contact');
+  assert.match(html, /id="sponsorluk-is-birligi"/);
+  assert.match(html, /href="mailto:airforce@istek\.k12\.tr\?subject=AIR%20FORCE%2012414%20Sponsorluk"/);
+  assert.match(html, /href="\/destek-ol\/"/);
+  assert.match(html, /href="\/etkinlikler\/"/);
+  assert.doesNotMatch(html, /event-row/);
+  assert.match(renderContent('contact', undefined, 'en'), /subject=AIR%20FORCE%2012414%20Sponsorship/);
+  const previous = siteConfig.events;
+  try {
+    siteConfig.events = [];
+    assert.doesNotMatch(renderContent('contact'), /Etkinlik takvimi/);
+  } finally { siteConfig.events = previous; }
+});
+
+test('season event panel wraps its two actions and the event detail does not repeat summary, date or location', () => {
+  const panel = renderContent('robots').match(/<aside class="af-event-panel"[\s\S]*?<\/aside>/)[0];
+  assert.match(panel, /<div class="entry-actions"><a class="button button-gold" href="\/etkinlikler\/ankara-regional\/"[^>]*>Etkinlik ayrıntıları[\s\S]*FIRST etkinlik sayfası[\s\S]*<\/div>/);
+  const route = contentRoutes.find(item => item.path === '/etkinlikler/ankara-regional/');
+  const html = renderContent('event', route.item);
+  assert.equal(html.split(route.item.location).length - 1, 1);
+  assert.equal(html.split(route.item.date).length - 1, 1);
+  assert.equal(html.split(route.item.summary).length - 1, 1);
+});
+
+test('events without valid dates are listed last under a neutral heading, not as past events', () => {
+  const previous = siteConfig.events;
+  try {
+    siteConfig.events = [
+      { status: 'published', title: 'UNDATED_EVENT', url: 'https://example.com/undated' },
+      { status: 'published', title: 'PAST_EVENT', startDate: '2000-01-01', endDate: '2000-01-02' },
+      { status: 'published', title: 'FUTURE_EVENT', startDate: '2999-01-01', endDate: '2999-01-02' },
+    ];
+    const html = renderContent('events');
+    const past = html.slice(html.indexOf('id="gecmis"'), html.indexOf('id="tarihsiz"'));
+    assert.match(past, /PAST_EVENT/);
+    assert.doesNotMatch(past, /UNDATED_EVENT/);
+    assert(html.indexOf('PAST_EVENT') < html.indexOf('UNDATED_EVENT'));
+    assert.match(html, /id="tarihsiz"[\s\S]*Diğer etkinlikler/);
+  } finally { siteConfig.events = previous; }
+});
+
+test('the English brand name keeps lang=en inside uppercase eyebrows', () => {
+  for (const kind of ['robots', 'frc']) assert.match(renderContent(kind), /<p class="eyebrow"><span lang="en">FIRST Robotics Competition<\/span>/);
+});
+
+test('contact page has no Events section heading, only a small calendar link when events exist', () => {
+  const html = renderContent('contact');
+  assert.doesNotMatch(html, /<h2 class="section-heading">Etkinlikler<\/h2>/);
+  assert.match(html, /class="text-link" href="\/etkinlikler\/"/);
 });

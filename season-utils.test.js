@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { selectUpcomingEvent, formatContentDate, isCalendarDate, getEventCountdown } from './season-utils.js';
+import { isUpcomingEvent, selectUpcomingEvent,formatContentDate, isCalendarDate, getEventCountdown } from './season-utils.js';
 
 test('season promotes the nearest published event and excludes expired or invalid dates', () => {
   const upcoming = { status: 'published', title: 'Ankara', startDate: '2027-03-19', endDate: '2027-03-21' };
@@ -46,3 +46,12 @@ test('event countdown computes upcoming, live and ended states in Istanbul time'
   assert.equal(getEventCountdown('invalid', '2027-03-21', new Date()), null);
 });
 
+test('isUpcomingEvent keeps an event through its last Istanbul day and rejects drafts and bad dates', () => {
+  const event = { status: 'published', startDate: '2027-03-19', endDate: '2027-03-21' };
+  assert.equal(isUpcomingEvent(event, new Date('2027-03-21T20:59:59Z')), true);
+  assert.equal(isUpcomingEvent(event, new Date('2027-03-21T21:00:00Z')), false);
+  assert.equal(isUpcomingEvent({ ...event, status: 'draft' }, new Date('2027-01-01T00:00:00Z')), false);
+  assert.equal(isUpcomingEvent({ ...event, startDate: '2027-02-30' }, new Date('2027-01-01T00:00:00Z')), false);
+  assert.equal(isUpcomingEvent({ ...event, endDate: '2027-03-01' }, new Date('2027-01-01T00:00:00Z')), false);
+  assert.equal(isUpcomingEvent(undefined), false);
+});

@@ -1,3 +1,4 @@
+import './test-clock.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateRobotsTxt, generateSitemapXml, normalizeSiteUrl } from './seo-utils.js';
@@ -31,4 +32,11 @@ test('generateSitemapXml includes only indexable pages with TR/EN hreflang alter
   assert.match(xml, /hreflang="x-default" href="https:\/\/air-force-12414-v2\.vercel\.app\/takim\/"/);
   assert.doesNotMatch(xml, /404\.html/);
   assert.doesNotMatch(xml, /\/kaynaklar\//);
+});
+
+test('sitemap lists the event detail page with its English alternate and leaves out the empty journal', () => {
+  const xml = generateSitemapXml(pages, 'https://team12414.com');
+  assert.match(xml, /<loc>https:\/\/team12414\.com\/etkinlikler\/ankara-regional\/<\/loc>/);
+  assert.match(xml, /hreflang="en" href="https:\/\/team12414\.com\/en\/events\/ankara-regional\/"/);
+  assert.doesNotMatch(xml, /\/gunluk\/|\/en\/journal\//);
 });

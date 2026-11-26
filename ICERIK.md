@@ -9,11 +9,11 @@ Dosyanın sonundaki `contentTemplates` örneklerinden ihtiyacınız olan kaydı 
 1. `status: "draft"` olarak başlayın. Taslak, sitede ve arşiv aramasında görünmez.
 2. Gerçek metinleri, görselleri ve bağlantıları doldurun.
 3. Hazır olduğunda `status: "published"` yapın.
-4. `npm run build` ile yeniden üretin. Robot/proje/haber sayfası ve arşiv bağlantısı oluşur.
+4. `npm run build` ile yeniden üretin. Robot/proje/Takım Günlüğü yazısı/etkinlik sayfası ve arşiv bağlantısı oluşur.
 
 **Durumu olmayan kayıtlar da yayımlanmaz.** Bu kural öğrenci, mentor, tarihçe, ödül, kaynak, galeri, video, etkinlik ve SSS kayıtlarında da geçerlidir. Genel takım kimliği, ana takım fotoğrafı ve mevcut sponsor listesi bağımsızdır.
 
-Haber, proje ve kaynak arşivlerinin bağlantıları yayımlanmış içerik eklendiğinde menüye gelir. Takım galerisi ve Proje galerisi, **Galeriler** menüsünde her zaman erişilebilir. Fotoğraf veya video gelene kadar kısa bir açıklama gösterilir.
+Takım Günlüğü, proje ve kaynak arşivlerinin bağlantıları yayımlanmış içerik eklendiğinde menüye gelir (Takım Günlüğü menüde **Gündem** grubunda, Etkinlikler ile birlikte yer alır). Yayımlanmış etkinlik varsa `/etkinlikler/` sayfası açılır. Takım galerisi ve Proje galerisi, **Galeriler** menüsünde her zaman erişilebilir. Fotoğraf veya video gelene kadar kısa bir açıklama gösterilir.
 
 ## Türkçe ve İngilizce içerik
 
@@ -26,7 +26,7 @@ Sezon ve okul bilgisi, ana takım fotoğrafının alternatif metni ve sponsorluk
 | Liste / alan | Kullanıldığı yer |
 | --- | --- |
 | `school` | Okul adı ve resmî bağlantısı |
-| `siteUrl` | Gerçek HTTPS alan adı; yerelde boş kalabilir |
+| `siteUrl` | Asıl adres: `https://team12414.com`. Canonical, hreflang, sitemap ve paylaşım görseli buna bağlıdır. `team12414.org` ve `www` adresleri `vercel.json` ile bu adrese yönlenir |
 | `seasonStatus` | Kısa sezon açıklaması |
 | `season` | Sezon yılı, mevcut durum, açıklama ve gerçek son güncelleme tarihi |
 | `teamPhoto`, `teamPhotoAlt` | Ana sayfa takım görseli, takım sayfası ve galeri |
@@ -35,13 +35,12 @@ Sezon ve okul bilgisi, ana takım fotoğrafının alternatif metni ve sponsorluk
 | `robots` | Robot arşivi ve detayları |
 | `projects` | Toplumsal etki arşivi ve detayları |
 | `resources` | Konuya göre filtrelenen kaynak kütüphanesi |
-| `news` | Haber arşivi ve ayrı yazı sayfaları |
+| `news` | Takım Günlüğü (`/gunluk/`) ve ayrı yazı sayfaları |
 | `gallery`, `videos` | Fotoğraf galerisi ve video bağlantıları |
 | `sponsors` | Gerçek takım sponsorları; okul `schoolMark`, organizatör `frcOrganizer` alanındadır |
-| `sponsorNeeds` | Sponsorlar ve Destek olun sayfalarının ortak ihtiyaç listesi |
-| `sponsorshipFile` | Destek sayfasındaki indirilebilir takım sunumu |
+| `sponsorNeeds` | Sponsorlarımız ve Sponsor olun sayfalarının ortak ihtiyaç listesi |
 | `email`, `instagram` | İletişim ve destek bağlantıları |
-| `events`, `faq` | Takvim ve sık sorulanlar |
+| `events`, `faq` | Etkinlikler (`/etkinlikler/`, her etkinlik için ayrı sayfa) ve sık sorulanlar |
 
 ## Takım fotoğrafı
 
@@ -57,7 +56,7 @@ teamPhotoPosition: "center",
 
 Gerçek piksel ölçülerini ve fotoğrafı açıklayan kısa metni yazın. İngilizce alternatif metni `siteConfig.en.teamPhotoAlt` alanına ekleyin. Fotoğraf eklendiğinde ana sayfada Pegasus açılışının hemen altında, Takımımız sayfasında ve takım galerisinde görünür. Telefon görünümünde fotoğrafın tamamı gösterilir.
 
-Ana sayfa ve sezon sayfasında, yayımlanmış etkinlikler arasından tarihi en yakın ve henüz bitmemiş olan gösterilir. `startDate` ve `endDate` alanlarını `2027-03-19` biçiminde yazın. Görünen tarih metni `date`, konum `location`, resmî bağlantı `url` alanından gelir. Tarih seçimi Türkiye saatine göre site üretilirken yapılır; takvim değiştiğinde veya bir etkinlik bittikten sonra siteyi yeniden üretin. Tamamlanan etkinlikler iletişim sayfasındaki takvim kaydında korunur.
+Ana sayfa ve sezon sayfasında, yayımlanmış etkinlikler arasından tarihi en yakın ve henüz bitmemiş olan gösterilir. `startDate` ve `endDate` alanlarını `2027-03-19` biçiminde yazın. Görünen tarih metni `date`, konum `location`, resmî bağlantı `url` alanından gelir. Tarih seçimi Türkiye saatine göre site üretilirken yapılır; takvim değiştiğinde veya bir etkinlik bittikten sonra siteyi yeniden üretin. Tamamlanan etkinlikler `/etkinlikler/` sayfasında "Geçmiş etkinlikler" altında korunur.
 
 `season.updatedAt`, içeriği gerçekten güncellediğiniz tarihi taşımalıdır; güncelmiş gibi görünmesi için otomatik değiştirilmez. Boş arşivler menüde görünmez, kısa bir boş durum açıklaması sunar ve `noindex` ile arama motorlarından dışlanır. İlk geçerli yayımlanmış kayıt eklendiğinde yeniden derleme ile bu kısıt kalkar.
 
@@ -96,11 +95,15 @@ Ana sayfa ve sezon sayfasında, yayımlanmış etkinlikler arasından tarihi en 
 `results`: `{ event: "Etkinlik adı", date: "Gerçek tarih", result: "Doğrulanmış sonuç" }`.
 `mechanisms` metin listesi olabilir. `photos` aşağıdaki galeri biçimini kullanır. Boş CAD/kod/video bağlantıları aktif düğme oluşturmaz.
 
-Robotlar sezon yılına göre yeniden eskiye sıralanır. Haber tarihlerini `YYYY-MM-DD` (yıl-ay-gün) biçiminde yazın; haberler de yeniden eskiye sıralanır. Başlığı veya robot adı boş kayıtlar, yayımlanmış olarak işaretlense bile detay sayfası oluşturmaz. Aynı listede iki yayımlanmış kaydın slug değeri aynıysa derleme açıklayıcı bir hata ile durur; slug değerlerinden birini düzeltin.
+Robotlar sezon yılına göre yeniden eskiye sıralanır. Günlük yazılarının tarihlerini `YYYY-MM-DD` (yıl-ay-gün) biçiminde yazın; yazılar da yeniden eskiye sıralanır. Başlığı veya robot adı boş kayıtlar, yayımlanmış olarak işaretlense bile detay sayfası oluşturmaz. Aynı listede iki yayımlanmış kaydın slug değeri aynıysa derleme açıklayıcı bir hata ile durur; slug değerlerinden birini düzeltin.
 
-## Proje ve haber sayfaları
+## Proje, Takım Günlüğü ve etkinlik sayfaları
 
-`contentTemplates.project` ve `contentTemplates.news` örneklerini kullanın. `slug`, başlık ve `status` gereklidir. Yayımlanan proje `/toplumsal-etki/slug/`, haber `/haberler/slug/` adresini alır.
+`contentTemplates.project` ve `contentTemplates.news` örneklerini kullanın. `slug`, başlık ve `status` gereklidir. Yayımlanan proje `/toplumsal-etki/slug/`, Takım Günlüğü yazısı (`news`) `/gunluk/slug/` adresini alır. Eski `/haberler/...` ve `/en/news/...` adresleri `vercel.json` içindeki kalıcı yönlendirmelerle `/gunluk/...` ve `/en/journal/...` adreslerine gider.
+
+Takım Günlüğü yazılarında `category` yalnızca şu dört değerden biri olmalıdır: `Takımdan`, `Özel Günler`, `FRC Gelişmeleri`, `Teknik` (İngilizce karşılıkları sayfada otomatik gösterilir). Boş veya tanımsız kategori "Takımdan" olarak yayımlanır. Filtre düğmeleri bu sırayı izler ve yalnızca kullanılan kategorileri gösterir.
+
+**Etkinlikler (`events`).** `contentTemplates.event` örneğini kullanın. `slug` (küçük harf, rakam, tire), `title` ve `status: "published"` olan etkinlik `/etkinlikler/slug/` adresinde ayrı sayfa alır; slug veya başlık yoksa yalnızca `url` ile resmî FIRST bağlantısı gösterilir. Alanlar: `summary`, `date`, `startDate`/`endDate` (`YYYY-AA-GG`), `location`, `city`, `country`, `url`, `program`, `results`, `photos` ve `en` (`date`, `location`, `summary`). `program` maddeleri `contentTemplates.eventProgramItem`, sonuçlar `contentTemplates.eventResult` biçimindedir; her biri yalnızca `status: "published"` ve başlık/sonuç alanı doluysa görünür. Program, Sonuçlar ve Fotoğraflar bölümleri içerik yoksa sayfada hiç yer almaz. İki yayımlanmış etkinliğe aynı slug verilirse derleme hata ile durur.
 
 Projeler: `goal`, `audience`, `description`, `date`, `results`, `evidenceUrl`, `photos`. Uzun anlatım için `paragraphs: ["İlk paragraf", "İkinci paragraf"]` eklenebilir. Haberlerde `summary` kısa giriş, `paragraphs` yazının tamamıdır. Metinler HTML olarak çalıştırılmaz; ayrı paragraflar kullanın.
 
@@ -119,7 +122,9 @@ Etki sayıları, ödüller ve yarışma sonuçları doğrulandıktan sonra yayı
        caption: "Chassis assembly", category: "Workshop" } }
    ```
 
-3. Bir sosyal sorumluluk etkinliğinin fotoğrafları için aynı kayıt biçimini ilgili `projects` kaydının `photos` listesinde kullanın. Fotoğraflar projenin kendi sayfasında ve `/proje-galerisi/` adresindeki albümünde otomatik görünür. Proje kaydı ve fotoğrafları `published` olmalıdır. Proje tarihini `YYYY-AA-GG` biçiminde yazın.
+3. Takım galerisinde fotoğraflar albümlere ayrılır: `album` alanı doluysa o albüm adı, yoksa `category`, o da yoksa "Takım" kullanılır. Albümler ilk görülme sırasıyla listelenir. İsteğe bağlı `album` alanı `contentTemplates.photo` içinde bulunur.
+4. Bir yarışma etkinliğinin fotoğraflarını ilgili `events` kaydının `photos` listesine ekleyin. Fotoğraflar etkinliğin sayfasındaki Fotoğraflar bölümünde ve `/galeri/` sayfasındaki "Etkinlik albümleri" bölümünde görünür. Etkinlik kaydı ve fotoğrafları `published` olmalıdır.
+5. Bir sosyal sorumluluk etkinliğinin fotoğrafları için aynı kayıt biçimini ilgili `projects` kaydının `photos` listesinde kullanın. Fotoğraflar projenin kendi sayfasında ve `/proje-galerisi/` adresindeki albümünde otomatik görünür. Proje kaydı ve fotoğrafları `published` olmalıdır. Proje tarihini `YYYY-AA-GG` biçiminde yazın.
 
 `caption` isteğe bağlıdır. `alt` fotoğrafta ne olduğunu açıklamalı, `width` ve `height` gerçek piksel boyutlarını göstermelidir. Yukarıdaki dosya adı ve açıklama örnektir; yayımlamadan önce kendi fotoğrafınızla değiştirin.
 
@@ -168,3 +173,27 @@ npm run build
 **Özel belgeleri ve taslak dosyaları `public` içine koymayın.** Bu klasördeki dosyalar bağlantısı olmasa da yayımlanır. Yayımlanmayacak dosyalar için `public` dışındaki bir klasör kullanın.
 
 Bilinmeyen adresler `404.html` sayfasını 404 durum koduyla döndürmeli. Domain bağlandığında `siteUrl` alanına gerçek HTTPS adresini yazın. Sosyal paylaşım ve canonical adresler bu alanı kullanır.
+
+## Siteyi güncel tutmak: sorumlular ve sıklık
+
+Eski içerik, hiç içerik olmamasından kötüdür. Bir kanalı en az ayda bir güncelleyemiyorsanız menüden kaldırın (boş arşivler zaten kendiliğinden gizlenir).
+
+| Sorumluluk | Kim | Ne sıklıkla |
+| --- | --- | --- |
+| Site sahibi (teknik bakım, yayın) | Yazılım ekibinden 1 öğrenci + 1 mentor | Ayda bir kontrol |
+| Takım Günlüğü, fotoğraf ve video | Medya ekibi | Her etkinlikten sonraki 1 hafta içinde |
+| Robot sayfası | Teknik lider | Robot tanıtımında, her etkinlikten sonra |
+| Sponsor sayfaları ve dosyası | İş geliştirme ekibi | Yeni sponsor geldiğinde; dosya yılda bir |
+| İngilizce çeviriler | Her bölümün sorumlusu | Türkçe içerikle aynı gün |
+| Devir teslim | Mezun olan site sahibi | Mezuniyetten önce, yazılı bir kılavuzla |
+
+| Sezon dönemi | Siteye eklenecekler |
+| --- | --- |
+| Ocak başı (Kickoff) | Oyunun tanıtımı, Kickoff haberi; geri sayımı ilk etkinliğe çevir (`events`) |
+| Ocak–Şubat (üretim) | Haftalık kısa üretim günlüğü, fotoğraflar |
+| Robot tanıtımı | Yeni robot sayfası: fotoğraf, özellikler, tanıtım videosu |
+| Mart–Nisan (turnuvalar) | Her turnuvadan sonra sonuç, ödül, etkinlik fotoğrafları (`events[].photos`), TBA bağlantısı |
+| Mayıs–Haziran | Sezon özeti, CAD ve kod yayını; `season.updatedAt` güncelle |
+| Yaz–sonbahar | Yeni liderler, sponsorluk dosyasının yeni yıl sürümü, outreach etkinlikleri |
+
+Her yayından önce: `npm test`, `npm run build`, ana sayfayı 375 px genişlikte kontrol edin.

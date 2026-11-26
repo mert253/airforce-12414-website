@@ -25,14 +25,13 @@ h2 { font-size: clamp(32px, 3.5vw, 48px); line-height: 1.08; }
 .hero h1 { font-family: 'Barlow Condensed', Inter, sans-serif; font-weight: 900; font-size: clamp(72px, 8.65vw, 124px); line-height: .86; letter-spacing: -.025em; margin: 12px 0 20px; }
 .hero-eyebrow { font-size: 11px; letter-spacing: .16em; color: var(--gold); }
 .hero-eyebrow span { padding-inline: 6px; }
-.hero-identity { font-size: clamp(16px, 1.55vw, 21px); font-weight: 600; }
-.hero-description { max-width: 46ch; color: #b6c3d2; font-size: clamp(14px, 1.3vw, 16px); line-height: 1.65; margin-top: 10px; }
+.hero-identity { font-size: clamp(19px, 2.1vw, 28px); font-weight: 750; line-height: 1.25; letter-spacing: -.01em; color: #f2f4f7; }
+.hero-identity::after { content: ''; display: block; width: 36px; height: 2px; margin-top: 10px; background: var(--gold); }
+.hero-description { max-width: 46ch; color: #b6c3d2; font-size: clamp(13px, 1.15vw, 15px); line-height: 1.65; margin-top: 12px; }
 .hero-actions { margin-top: clamp(18px, 2.2vw, 26px); }
 .hero-art { width: min(100%, 460px); justify-self: center; }
 .editorial-label { display: flex; align-items: center; gap: 20px; margin-bottom: 28px; color: var(--gold-ink); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
 .editorial-label::after { content: ''; height: 1px; background: var(--line); flex: 1; }
-.home-frc-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 6vw, 80px); align-items: center; }
-.home-frc-grid > * { min-width: 0; }
 .home-photo { padding-block: clamp(24px, 4vw, 48px); background: var(--paper); }
 .home-photo > .container { max-width: 980px; }
 .home-photo-heading { align-items: center; flex-wrap: wrap; gap: 4px 18px; margin-bottom: 14px; }
@@ -54,10 +53,9 @@ h2 { font-size: clamp(32px, 3.5vw, 48px); line-height: 1.08; }
 .season-event .season-date { font-size: 17px; font-weight: 600; margin-top: 10px; }
 .season-event .season-location { font-size: 13px; color: #b6c3d2; margin-top: 4px; }
 .season-event .text-link { color: var(--gold); margin-top: 8px; }
-.home-frc { background: var(--silver); border-bottom: 1px solid var(--line); }
-.home-frc h2 { margin-top: 12px; }
-.home-frc-strip { padding-block: clamp(32px, 4vw, 52px); }
-.home-frc-strip h2 { font-size: clamp(30px, 3.5vw, 44px); }
+.season-frc-note { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--dark-line); max-width: 44ch; }
+.season-frc-note p { color: #c7d2df; font-size: 14px; }
+.season-event .text-link + .text-link { margin-left: 18px; }
 .home-partners { background: var(--paper); }
 .partners-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 40px; }
 .partners-layout > div > .text-link { margin-top: 12px; }
@@ -99,9 +97,12 @@ h2 { font-size: clamp(32px, 3.5vw, 48px); line-height: 1.08; }
   .nav-group > summary { justify-content: space-between; font-size: 16px; padding-block: 12px; }
   .nav-dropdown { position: static; box-shadow: none; border: 0; border-left: 2px solid var(--gold); margin: 0 0 12px 4px; padding: 0 8px; min-width: 0; background: transparent; }
   .nav-sub-link { white-space: normal; font-size: 14px; }
+  .nav-link.is-active, .nav-sub-link.is-active { color: var(--gold); font-weight: 700; box-shadow: inset 3px 0 0 var(--gold); padding-left: 12px; background: #ffffff0a; }
+  .nav-group[data-current] > summary { color: var(--gold); box-shadow: inset 3px 0 0 var(--gold); padding-left: 12px; }
   .partners-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
 }
 @media (max-width: 520px) {
+  .hero-identity { font-size: clamp(18px, 5.4vw, 22px); }
   .hero-main { grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr); padding-block: 22px 26px; gap: 0 12px; }
   .hero-copy { display: contents; animation: none; }
   .hero-eyebrow { grid-column: 1 / -1; margin-bottom: 10px; }
@@ -110,7 +111,10 @@ h2 { font-size: clamp(32px, 3.5vw, 48px); line-height: 1.08; }
   .hero-art { grid-column: 2; grid-row: 2; justify-self: end; }
 }
 @media (max-width: 720px) {
-  .home-frc-grid, .season-feature-grid, .partners-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .season-feature-grid, .partners-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .season-event { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; }
+  .season-event > :not(.text-link) { flex-basis: 100%; }
+  .season-event .text-link + .text-link { margin-left: 0; }
   .editorial-label { margin-bottom: 24px; }
   .season-feature-title .text-link { margin-top: 8px; }
   .home-season-summary { margin-top: 20px; padding-top: 16px; }

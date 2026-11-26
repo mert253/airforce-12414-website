@@ -1,3 +1,4 @@
+import './test-clock.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
@@ -61,10 +62,10 @@ test('home never leaks unpublished or invalid detail cards', () => {
 });
 
 test('empty archives are noindex while an added public record makes its archive indexable', () => {
-  for (const path of ['/takim/tarihce/', '/takim/basarilar/', '/robotlar/ilk-robot/', '/toplumsal-etki/', '/haberler/', '/galeri/', '/proje-galerisi/', '/kaynaklar/', '/en/resources/']) {
+  for (const path of ['/takim/tarihce/', '/takim/basarilar/', '/robotlar/ilk-robot/', '/toplumsal-etki/', '/gunluk/', '/galeri/', '/proje-galerisi/', '/kaynaklar/', '/en/resources/']) {
     assert.match(rendered.get(path), /name="robots" content="noindex, follow"/, path);
   }
-  for (const path of ['/', '/takim/', '/robotlar/', '/frc/', '/sponsorluk/', '/destek-ol/', '/iletisim/']) {
+  for (const path of ['/', '/takim/', '/robotlar/', '/frc/', '/sponsorluk/', '/destek-ol/', '/iletisim/', '/etkinlikler/', '/etkinlikler/ankara-regional/', '/en/events/', '/en/events/ankara-regional/']) {
     assert.doesNotMatch(rendered.get(path), /name="robots" content="noindex/, path);
   }
   const route = buildContentRoutes({ ...siteConfig, news: [{ status: 'published', title: 'Atölye kaydı', slug: 'atolye-kaydi', date: '2026-11-16' }] }).find(item => item.kind === 'news');
@@ -180,3 +181,107 @@ test('pages emit enriched JSON-LD schemas, manifest, og:locale:alternate, countd
   assert.match(home, /data-back-to-top/);
 });
 
+
+test('production URL drives canonical, absolute hreflang, share image and sitemap', () => {
+  assert.equal(siteConfig.siteUrl, 'https://team12414.com');
+  const home = rendered.get('/');
+  assert.ok(home.includes('<link rel="canonical" href="https://team12414.com/">'));
+  assert.ok(home.includes('hreflang="en" href="https://team12414.com/en/"'));
+  assert.ok(home.includes('property="og:image" content="https://team12414.com/assets/og-image.jpg"'));
+  for (const [path, html] of rendered) for (const ref of html.matchAll(new RegExp('(?:src|href)="(/assets/[^"?#]+)"', 'g')))
+    assert.ok(existsSync(resolve(root, 'public', ref[1].slice(1))), `${path} references missing ${ref[1]}`);
+  const manifest = JSON.parse(readFileSync(resolve(root, 'public/manifest.webmanifest'), 'utf8'));
+  for (const icon of manifest.icons) assert.ok(existsSync(resolve(root, 'public', icon.src.slice(1))), icon.src);
+});
+
+test('sponsor pages use the same names everywhere and the domain aliases redirect to .com', () => {
+  for (const [path, html] of rendered) {
+    assert.doesNotMatch(html, /Destek olun|Support the team/, path);
+  }
+  const vercel = JSON.parse(readFileSync(resolve(root, 'vercel.json'), 'utf8'));
+  const hostRedirects = vercel.redirects.filter(r => r.has);
+  const hosts = hostRedirects.map(r => r.has[0].value).sort();
+  assert.deepEqual(hosts, ['team12414.org', 'www.team12414.com', 'www.team12414.org']);
+  assert.ok(hostRedirects.every(r => r.destination === 'https://team12414.com/$1' && r.permanent));
+  for (const [source, destination] of [['/haberler/:path*', '/gunluk/:path*'], ['/en/news/:path*', '/en/journal/:path*']]) {
+    assert.ok(vercel.redirects.some(r => r.source === source && r.destination === destination && r.permanent && !r.has), source);
+  }
+  assert.ok(vercel.headers[0].headers.some(h => h.key === 'Strict-Transport-Security'));
+});
+
+test('sponsor pages stay in the menu and show no invented sponsors, tiers or file area, in either language', () => {
+  assert.equal(siteConfig.sponsors.length, 0);
+  for (const [path, html] of rendered) {
+    for (const word of ['Bronz', 'Gümüş', 'Altın', 'Bronze', ' download', 'Takım sunumu', 'Team presentation', 'Takım sponsorları', 'Team sponsors']) assert.ok(!html.includes(word), `${path} shows ${word}`);
+  }
+  for (const [path, link] of [['/', 'href="/sponsorluk/"'], ['/en/', 'href="/en/sponsors/"'], ['/destek-ol/', 'href="/sponsorluk/"']]) assert.ok(rendered.get(path).includes(link), `${path} lacks ${link}`);
+  assert.ok(rendered.get('/destek-ol/').includes('mailto:airforce@istek.k12.tr'));
+});
+
+test('the Ankara Regional detail page carries Event schema, a three-level breadcrumb and a countdown', () => {
+  const detail = rendered.get('/etkinlikler/ankara-regional/');
+  assert.match(detail, /"@type":"Event"/);
+  assert.match(detail, /"addressLocality":"Ankara"/);
+  const breadcrumb = JSON.parse(detail.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'].find(item => item['@type'] === 'BreadcrumbList');
+  assert.equal(breadcrumb.itemListElement.length, 3);
+  assert.equal(breadcrumb.itemListElement[1].item, 'https://team12414.com/etkinlikler/');
+  assert.match(detail, /data-countdown-start="2027-03-19"/);
+  assert.match(detail, /<a href="\/etkinlikler\/">Etkinlikler<\/a><span aria-hidden="true">\/<\/span><span>Ankara Regional<\/span>/);
+  assert.match(rendered.get('/en/events/ankara-regional/'), /<a href="\/en\/events\/">Events<\/a>/);
+  assert.match(rendered.get('/robotlar/'), /"url":"https:\/\/team12414\.com\/etkinlikler\/ankara-regional\/"/);
+  assert.match(rendered.get('/en/robots/'), /"url":"https:\/\/team12414\.com\/en\/events\/ankara-regional\/"/);
+});
+
+test('home and season pages point their countdown to the event detail page in both languages', () => {
+  for (const path of ['/', '/robotlar/']) assert.match(rendered.get(path), /href="\/etkinlikler\/ankara-regional\/"/, path);
+  for (const path of ['/en/', '/en/robots/']) assert.match(rendered.get(path), /href="\/en\/events\/ankara-regional\/"/, path);
+});
+
+test('the main menu groups events and the journal under Gündem and drops the old Takımdan group', () => {
+  const navOf = html => html.match(/<nav id="navigation"[^>]*>[\s\S]*?<\/nav>/)[0];
+  const home = navOf(rendered.get('/'));
+  assert.match(home, /<summary>Gündem</);
+  assert.match(home, /href="\/etkinlikler\/"/);
+  assert.match(home, /href="\/etkinlikler\/ankara-regional\/"/);
+  assert.doesNotMatch(home, /href="\/gunluk\/"/);
+  assert.doesNotMatch(home, /<summary>Takımdan</);
+  const english = navOf(rendered.get('/en/'));
+  assert.match(english, /<summary>News &amp; events</);
+  assert.match(english, /href="\/en\/events\/ankara-regional\/"/);
+  const events = rendered.get('/etkinlikler/');
+  assert.ok(navOf(events).includes('href="/etkinlikler/" class="nav-sub-link is-active" aria-current="page"'));
+  const detail = navOf(rendered.get('/etkinlikler/ankara-regional/'));
+  assert.match(detail, /<details class="nav-group" data-current>\s*<summary>Gündem/);
+});
+
+test('the footer has Galeriler and Gündem columns instead of Arşiv, in both languages', () => {
+  const footerOf = html => html.match(/<footer class="site-footer">[\s\S]*?<\/footer>/)[0];
+  const tr = footerOf(rendered.get('/'));
+  assert.match(tr, /<h2>Galeriler<\/h2>/);
+  assert.match(tr, /<h2>Gündem<\/h2>/);
+  assert.doesNotMatch(tr, /<h2>Arşiv<\/h2>/);
+  assert.match(tr, /href="\/etkinlikler\/"/);
+  const en = footerOf(rendered.get('/en/'));
+  assert.match(en, /<h2>Galleries<\/h2>/);
+  assert.match(en, /<h2>News &amp; events<\/h2>|<h2>News & events<\/h2>/);
+});
+
+test('home folds the FRC explainer into the season block and shows at most three journal cards when posts exist', () => {
+  const home = rendered.get('/');
+  assert.doesNotMatch(home, /home-frc-strip|home-frc/);
+  const season = home.match(/id="sezon"[\s\S]*?<\/section>/)[0];
+  assert.match(season, /href="\/frc\/"/);
+  assert.match(season, /class="season-frc-note"/);
+  assert.doesNotMatch(home, /class="section home-news"/);
+  const previous = siteConfig.news;
+  try {
+    siteConfig.news = [1, 2, 3, 4].map(n => ({ status: 'published', slug: `yazi-${n}`, title: `Yazı ${n}`, category: 'Teknik', date: `2026-11-0${n}` }));
+    const html = renderPage(readFileSync(resolve(root, 'index.html'), 'utf8'), pages[0]);
+    const news = html.match(/<section class="section home-news">[\s\S]*?<\/section>/)[0];
+    assert.equal((news.match(/<article class="content-card">/g) || []).length, 3);
+    assert.match(news, /href="\/gunluk\/yazi-4\/"/);
+    assert.match(news, /<span class="tag">Teknik<\/span>/);
+    assert.match(news, /href="\/gunluk\/"/);
+    assert.doesNotMatch(news, /\/haberler\//);
+  } finally { siteConfig.news = previous; }
+});

@@ -24,7 +24,7 @@ export const translator = lang => (turkish, english) => lang === 'en' ? english 
 const englishSections = {
   takim: 'team', tarihce: 'history', basarilar: 'awards',
   robotlar: 'robots', 'toplumsal-etki': 'outreach',
-  kaynaklar: 'resources', haberler: 'news', galeri: 'gallery',
+  kaynaklar: 'resources', etkinlikler: 'events', gunluk: 'journal', galeri: 'gallery',
   'proje-galerisi': 'project-gallery', sponsorluk: 'sponsors', 'destek-ol': 'support', iletisim: 'contact',
 };
 

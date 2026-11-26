@@ -62,6 +62,7 @@ function setMenuOpen(open) {
   menuLabel.textContent = open ? messages.close : messages.menu;
   navigation.classList.toggle('is-open', open);
   if (!open) closeGroups();
+  else if (mobile.matches) (navGroups.find(group => group.hasAttribute('data-current')) || {}).open = true;
 }
 function closeMenu() {
   setMenuOpen(false);

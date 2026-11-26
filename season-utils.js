@@ -10,11 +10,15 @@ export function formatContentDate(value, lang = 'tr') {
   return new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'tr-TR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
 }
 
-export function selectUpcomingEvent(events = [], now = new Date()) {
+export function isUpcomingEvent(event, now = new Date()) {
   const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Istanbul' }).format(now);
-  return events.filter(event => event?.status === 'published' &&
+  return event?.status === 'published' &&
     isCalendarDate(event.startDate) && isCalendarDate(event.endDate) &&
-    event.endDate >= event.startDate && event.endDate >= today)
+    event.endDate >= event.startDate && event.endDate >= today;
+}
+
+export function selectUpcomingEvent(events = [], now = new Date()) {
+  return events.filter(event => isUpcomingEvent(event, now))
     .sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
 }
 

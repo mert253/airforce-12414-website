@@ -1,5 +1,5 @@
 import { siteConfig as content } from './site-config.js';
-import { selectUpcomingEvent, formatContentDate } from './season-utils.js';
+import { selectUpcomingEvent, isUpcomingEvent, isCalendarDate, formatContentDate } from './season-utils.js';
 import { localizeRecord, siteContent, translator } from './locale.js';
 
 export const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
@@ -72,7 +72,7 @@ function galleryPhoto(photo, t) {
   const caption = photo.caption || photo.alt;
   const action = t('Fotoğrafı büyüt', 'Enlarge photo');
   const label = photo.alt ? `${action}: ${photo.alt}` : action;
-  return `<figure class="gallery-card" ${filterAttrs(photo.category || t('Takım', 'Team'), `${photo.alt || ''} ${photo.caption || ''} ${photo.category || ''}`)}>
+  return `<figure class="gallery-card">
     <a class="gallery-image" href="${e(safeImageSrc(photo.src))}" data-gallery-image data-src="${e(safeImageSrc(photo.src))}" data-alt="${e(photo.alt)}" data-caption="${e(caption)}" aria-label="${e(label)}">
       ${image(photo.src, photo.alt, photo.width, photo.height)}<span class="gallery-expand" aria-hidden="true">↗</span>
     </a>${caption ? `<figcaption>${e(caption)}</figcaption>` : ''}
@@ -80,6 +80,21 @@ function galleryPhoto(photo, t) {
 }
 function validSlug(item) { return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item?.slug ?? ''); }
 function routable(items) { return publishedRecords(items).filter(item => validSlug(item) && String(item.title || item.name || '').trim()); }
+const eventPhotos = event => galleryPhotos(event?.photos);
+const publishedProgram = event => publishedRecords(event?.program).filter(item => String(item.title || '').trim());
+const publishedResults = event => publishedRecords(event?.results).filter(item => String(item.label || '').trim() && String(item.result || '').trim());
+export function eventPath(event) {
+  return event?.status === 'published' && validSlug(event) && String(event.title || '').trim() ? `/etkinlikler/${event.slug}/` : '';
+}
+export function sponsorshipMailto(content, t) {
+  return `mailto:${content.email}?subject=${encodeURIComponent(t('AIR FORCE 12414 Sponsorluk', 'AIR FORCE 12414 Sponsorship'))}`;
+}
+const newestStart = (a, b) => String(b.startDate || '').localeCompare(String(a.startDate || ''));
+function eventAlbums(data) {
+  return routable(data.events).sort(newestStart)
+    .map(event => ({ event, photos: eventPhotos(event) }))
+    .filter(album => album.photos.length);
+}
 function projectAlbums(projects) {
   return routable(projects).sort(newestDate)
     .map(project => ({ project, photos: galleryPhotos(project.photos) }))
@@ -94,8 +109,16 @@ function galleryNav(currentPath, t) {
   return `<nav class="gallery-nav" aria-label="${t('Galeriler', 'Galleries')}">${links.map(([label, path]) =>
     `<a href="${path}"${path === currentPath ? ' aria-current="page"' : ''}>${e(label)}</a>`).join('')}</nav>`;
 }
-export const newestYear = (a, b) => (Number(b.year) || 0) - (Number(a.year) || 0);
+export const journalCategories = [['Takımdan', 'From the team'], ['Özel Günler', 'Special days'], ['FRC Gelişmeleri', 'FRC updates'], ['Teknik', 'Technical']];
+export function journalCategory(value, lang = 'tr') {
+  const text = String(value ?? '').trim();
+  const match = journalCategories.find(pair => pair.includes(text)) || journalCategories[0];
+  return lang === 'en' ? match[1] : match[0];
+}
+export const newestYear =(a, b) => (Number(b.year) || 0) - (Number(a.year) || 0);
 export const newestDate = (a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0);
+// The English brand name keeps its own language so Turkish uppercase rules do not turn it into "ROBOTİCS".
+const FRC_NAME = '<span lang="en">FIRST Robotics Competition</span>';
 const yearLabels = (items) => [...new Set(items.map(item => item.year).filter(year => year != null && year !== '').map(year => String(year).trim()).filter(Boolean))];
 const routes = [
   ['team', '/takim/', 'Takımımız', 'AIR FORCE 12414', 'AIR FORCE #12414, İSTEK Ankara Okulları bünyesinde 2027 FRC sezonuna hazırlanan robotik takımı.'],
@@ -105,12 +128,13 @@ const routes = [
   ['robot', '/robotlar/ilk-robot/', 'İlk robotumuz', 'Robot tanıtımı', 'AIR FORCE #12414 ilk robotu için teknik bilgiler, sezon sonuçları ve medya alanı.'],
   ['impact', '/toplumsal-etki/', 'Toplumsal etki', 'Robotun ötesinde', 'AIR FORCE eğitim, paylaşım ve toplumsal etki projeleri.'],
   ['resources', '/kaynaklar/', 'Kaynaklar', 'Öğren. Üret. Paylaş.', 'AIR FORCE teknik kaynakları: mekanik, elektronik, yazılım, strateji ve takım çalışmaları.'],
-  ['news', '/haberler/', 'Takımdan haberler', 'AIR FORCE günlüğü', 'AIR FORCE #12414 atölye, sezon ve takım haberleri.'],
+  ['events', '/etkinlikler/', 'Etkinlikler', 'Sezon takvimi', 'AIR FORCE #12414’ün katıldığı FIRST Robotics Competition etkinlikleri: tarih, konum ve resmî bağlantılar.'],
+  ['news', '/gunluk/', 'Takım Günlüğü', 'AIR FORCE günlüğü', 'AIR FORCE #12414 takım günlüğü: takımdan haberler, özel günler, FRC gelişmeleri ve teknik yazılar.'],
   ['gallery', '/galeri/', 'Takım galerisi', 'Takım ve etkinlik fotoğrafları', 'AIR FORCE #12414 takım, atölye ve yarışma fotoğrafları ile videoları.'],
   ['projectGallery', '/proje-galerisi/', 'Proje galerisi', 'Sosyal sorumluluk', 'AIR FORCE #12414 sosyal sorumluluk projelerinin fotoğraf albümleri.'],
   ['frc', '/frc/', 'FIRST & FRC', 'Bir robotun ötesi', 'FIRST Robotics Competition ve AIR FORCE takımının yer aldığı robotik programı.'],
-  ['sponsors', '/sponsorluk/', 'Sponsorlar ve kurumlar', 'Sponsorluk', 'AIR FORCE #12414 sponsorları, okulumuz ve Türkiye’deki FRC organizatörü.'],
-  ['support', '/destek-ol/', 'Destek olun', 'AIR FORCE ile', 'AIR FORCE için malzeme, üretim ve yarışma desteği seçenekleri ve sponsorluk iletişimi.'],
+  ['sponsors', '/sponsorluk/', 'Sponsorlarımız', 'Sponsorluk', 'AIR FORCE #12414 sponsorları, okulumuz ve Türkiye’deki FRC organizatörü.'],
+  ['support', '/destek-ol/', 'Sponsor olun', 'AIR FORCE ile', 'AIR FORCE için malzeme, üretim ve yarışma desteği seçenekleri ve sponsorluk iletişimi.'],
   ['contact', '/iletisim/', 'İletişim', 'Ankara, Türkiye', 'AIR FORCE #12414: airforce@istek.k12.tr ve Instagram airforce12414.'],
 ];
 const englishMetadata = {
@@ -121,12 +145,13 @@ const englishMetadata = {
   robot: ['Our first robot', 'Robot profile', 'Technical information, competition results and media for the first AIR FORCE #12414 robot.'],
   impact: ['Community impact', 'Beyond the robot', 'Education, outreach and community projects by AIR FORCE.'],
   resources: ['Resources', 'Learning and sharing', 'AIR FORCE resources for mechanical design, electronics, software, strategy and team operations.'],
-  news: ['Team news', 'AIR FORCE updates', 'AIR FORCE #12414 news from the workshop, the season and the team.'],
+  events: ['Events', 'Season calendar', 'FIRST Robotics Competition events AIR FORCE #12414 takes part in: dates, venues and official links.'],
+  news: ['Team journal', 'AIR FORCE journal', 'The AIR FORCE #12414 team journal: team news, special days, FRC updates and technical posts.'],
   gallery: ['Team gallery', 'Team and event photos', 'Photos and videos of AIR FORCE #12414 in the workshop and at competitions.'],
   projectGallery: ['Project gallery', 'Community outreach', 'Photo albums from AIR FORCE #12414 community outreach projects.'],
   frc: ['FIRST & FRC', 'Beyond the robot', 'Learn about FIRST Robotics Competition, the robotics program AIR FORCE takes part in.'],
-  sponsors: ['Sponsors and organizations', 'Sponsorship', 'Our sponsors, our school and the FIRST Robotics Competition organizer in Türkiye.'],
-  support: ['Support the team', 'AIR FORCE 12414', 'Support AIR FORCE with materials, fabrication or competition expenses, or contact us about sponsorship.'],
+  sponsors: ['Our sponsors', 'Sponsorship', 'Our sponsors, our school and the FIRST Robotics Competition organizer in Türkiye.'],
+  support: ['Sponsor the team', 'AIR FORCE 12414', 'Support AIR FORCE with materials, fabrication or competition expenses, or contact us about sponsorship.'],
   contact: ['Contact', 'Ankara, Türkiye', 'Contact AIR FORCE #12414 at airforce@istek.k12.tr or on Instagram at @airforce12414.'],
 };
 export function buildContentRoutes(data = content, lang = 'tr') {
@@ -137,25 +162,27 @@ export function buildContentRoutes(data = content, lang = 'tr') {
     robot: !routable(data.robots).some(item => item.slug === 'ilk-robot'),
     impact: !routable(data.projects).length,
     resources: !publicResources(data.resources).length,
+    events: !publishedRecords(data.events).filter(item => String(item.title || '').trim()).length,
     news: !routable(data.news).length,
-    gallery: !allPhotos(data, t).length && !publicVideos(data.videos).length,
+    gallery: !allPhotos(data, t).length && !publicVideos(data.videos).length && !eventAlbums(data).length,
     projectGallery: !projectAlbums(data.projects).length,
   };
   const result = routes.map(([kind, path, ...metadata]) => {
     const [title, kicker, description] = t(metadata, englishMetadata[kind]);
     return { kind, path, file: `${path.slice(1)}index.html`, title, kicker, description, noindex: Boolean(emptyPages[kind]) };
   });
-  for (const [kind, items, prefix] of [['robot', data.robots, '/robotlar/'], ['project', data.projects, '/toplumsal-etki/'], ['article', data.news, '/haberler/']]) {
+  for (const [kind, items, prefix] of [['robot', data.robots, '/robotlar/'], ['project', data.projects, '/toplumsal-etki/'], ['event', data.events, '/etkinlikler/'], ['article', data.news, '/gunluk/']]) {
     const seenSlugs = new Set();
     for (const item of publishedRecords(items).filter(validSlug)) {
       if (seenSlugs.has(item.slug)) throw new Error(`${prefix} içeriğinde aynı slug birden fazla kez yayımlandı: "${item.slug}". Her kayda benzersiz bir slug verin.`);
       seenSlugs.add(item.slug);
     }
-    const entries = routable(items).sort(kind === 'robot' ? newestYear : newestDate);
+    const entries = routable(items).sort(kind === 'robot' ? newestYear : kind === 'event' ? newestStart : newestDate);
+    const parent = { robot: [t('Sezon ve robotlar', 'Season and robots'), '/robotlar/'], project: [t('Toplumsal etki', 'Community impact'), '/toplumsal-etki/'], event: [t('Etkinlikler', 'Events'), '/etkinlikler/'], article: [t('Takım Günlüğü', 'Team journal'), '/gunluk/'] }[kind];
     for (const entry of entries) {
       const path = `${prefix}${entry.slug}/`;
       const item = lang === 'en' ? localizeRecord(entry, lang) : entry;
-      const record = { kind, path, file: `${path.slice(1)}index.html`, title: item.title || item.name, kicker: item.year || item.category || 'AIR FORCE 12414', description: item.description || item.summary || item.title || item.name, noindex: false, item };
+      const record = { kind, path, file: `${path.slice(1)}index.html`, title: item.title || item.name, kicker: kind === 'article' ? journalCategory(item.category, lang) : kind === 'event' ? t('Etkinlik', 'Event') : item.year || item.category || 'AIR FORCE 12414', description: kind === 'event' ? [item.summary, item.date, item.location].filter(Boolean).join(' · ') || item.title : item.description || item.summary || item.title || item.name, noindex: false, item, parent: { title: parent[0], path: parent[1] } };
       const existing = result.findIndex(route => route.path === path);
       if (existing >= 0) result[existing] = record;
       else result.push(record);
@@ -229,36 +256,33 @@ function robotCard(robot, t) {
 function robots({ content, t, lang }) {
   const entries = routable(content.robots).sort(newestYear), years = yearLabels(entries);
   const event = selectUpcomingEvent(content.events);
+  const detailPath = eventPath(event);
   const season = content.season || {};
   const updated = formatContentDate(season.updatedAt, lang);
   const year = e(season.year || 2027);
   const emptyRobotMessage = t('Henüz robot tanıtımı veya teknik kayıt yayımlanmadı.', 'We haven’t published a robot profile or technical documentation yet.');
-  return `${sectionNav([
-    [t('Sezon', 'Season'), 'sezon'],
-    ...(entries.length ? [[t('Robot arşivi', 'Robot archive'), 'robot-arsivi']] : []),
-  ], t)}
+  return `${entries.length ? sectionNav([[t('Sezon', 'Season'), 'sezon'], [t('Robot arşivi', 'Robot archive'), 'robot-arsivi']], t) : ''}
   <section class="section af-robot-season" id="sezon">
     <div class="af-season-intro" data-reveal>
-      <p class="eyebrow">FIRST Robotics Competition</p>
+      <p class="eyebrow">${FRC_NAME}</p>
       <h2>${t(`${year} sezonu`, `${year} season`)}</h2>
       ${season.status ? status(season.status) : ''}
       <p class="lead">${e(season.description || content.seasonStatus)}</p>
       ${updated ? `<p>${t('Son güncelleme', 'Last updated')} <time datetime="${e(season.updatedAt)}">${e(updated)}</time></p>` : ''}
       ${!entries.length ? para(emptyRobotMessage) : ''}
-      ${anchor(t('Resmî FIRST takım profili', 'Official FIRST team profile'), content.firstProfile, 'text-link', true)}
+      <div class="entry-actions">${anchor(t('FRC’de sezon nasıl ilerler?', 'How does an FRC season work?'), '/frc/')}${anchor(t('Resmî FIRST takım profili', 'Official FIRST team profile'), content.firstProfile, 'text-link', true)}</div>
     </div>
     ${event ? `<aside class="af-event-panel" aria-label="${t('Yarışma takvimi', 'Competition schedule')}" data-reveal data-reveal-delay="100">
       <p class="eyebrow">${t('Yaklaşan etkinlik', 'Upcoming event')}</p><h3>${e(event.title)}</h3>
       <p class="af-event-date">${e(event.date)}</p>
       <p class="af-event-location">${e(event.location)}</p>
       <div class="event-countdown" data-countdown-start="${e(event.startDate)}" data-countdown-end="${e(event.endDate)}" aria-live="off" hidden></div>
-      ${anchor(t('FIRST etkinlik sayfası', 'FIRST event page'), event.url, 'button button-gold', true)}
+      ${detailPath ? `<div class="entry-actions">${anchor(t('Etkinlik ayrıntıları', 'Event details'), detailPath, 'button button-gold')}${anchor(t('FIRST etkinlik sayfası', 'FIRST event page'), event.url, 'text-link', true)}</div>` : anchor(t('FIRST etkinlik sayfası', 'FIRST event page'), event.url, 'button button-gold', true)}
     </aside>` : `<aside class="af-season-reference" data-reveal><p class="eyebrow">${t('Yarışma takvimi', 'Competition schedule')}</p><h3>${t('Yaklaşan etkinlik kaydı yok', 'No upcoming events listed')}</h3><p>${t('Takımın resmî etkinlik kayıtlarını FIRST üzerinden inceleyebilirsiniz.', 'Visit FIRST for the team’s official event listings.')}</p>${anchor(t('FIRST takım profili', 'FIRST team profile'), content.firstProfile, 'text-link', true)}</aside>`}
   </section>
   ${entries.length ? `<section class="section af-robot-archive" id="robot-arsivi" data-collection>${heading(t('AIR FORCE robotları', 'AIR FORCE robots'), t('Sezon arşivi', 'Season archive'))}
     ${entries.length > 1 ? filterBar(years, t('Robot veya oyun ara', 'Search robots or games'), t) : ''}
     <div class="af-robot-list">${entries.map(entry => robotCard(entry, t)).join('')}</div>${filterEmpty(t)}</section>` : ''}
-  <section class="section">${anchor(t('FRC’de sezon nasıl ilerler?', 'How does an FRC season work?'), '/frc/')}</section>
   <section class="section af-contact-strip" data-reveal><div><p class="eyebrow">${t('Teknik destek ve sponsorluk', 'Technical support and sponsorship')}</p><h2>${t('Üretime katkı sağlayın.', 'Help us build our robot.')}</h2></div>${anchor(t('Destek seçenekleri', 'Ways to support the team'), '/destek-ol/', 'button button-gold')}</section>`;
 }
 function robot({ content, t, date }, item) {
@@ -346,20 +370,98 @@ function resources({ content, t }) {
   });
   return `<section class="section" data-collection>${heading(t('Kaynak kütüphanesi', 'Resource library'), t('Teknik belgeler ve eğitim kaynakları', 'Technical documents and learning resources'))}${filterBar(categories, t('Kaynak ara', 'Search resources'), t)}<div class="archive-grid resources-grid">${cards.join('')}</div>${filterEmpty(t)}</section>`;
 }
-function news({ content, t, date }) {
-  const fallbackCategory = t('Takımdan', 'Team update');
-  const entries = routable(content.news).sort(newestDate), categories = [...new Set(entries.map(item => item.category || fallbackCategory))];
-  if (!entries.length) return emptyCollection(t('Haber henüz yayımlanmadı', 'No news published yet'), t('Güncel sezon durumuna ve yarışma takvimine sezon sayfasından ulaşabilirsiniz.', 'Visit the season page for our latest update and competition schedule.'), t('Sezon durumunu inceleyin', 'View the season update'), '/robotlar/');
-  return `<section class="section" data-collection>${filterBar(categories, t('Haber ara', 'Search news'), t)}<div class="archive-grid news-grid">${entries.map(item => `<article class="archive-card" ${filterAttrs(item.category || fallbackCategory, `${item.title} ${item.summary || ''} ${item.category || ''}`)}><a class="card-media" href="/haberler/${e(item.slug)}/" aria-label="${e(t(`${item.title} haberini okuyun`, `Read ${item.title}`))}">${itemImage(item)}</a><div class="card-body"><div class="article-meta"><span class="tag">${e(item.category || fallbackCategory)}</span><span>${e(date(item.date))}</span></div><h3>${e(item.title)}</h3>${para(item.summary)}${anchor(t('Haberi okuyun', 'Read the story'), `/haberler/${item.slug}/`)}</div></article>`).join('')}</div>${filterEmpty(t)}</section>`;
+function events({ content, t }) {
+  const items = publishedRecords(content.events).filter(item => String(item.title || '').trim());
+  if (!items.length) return emptyCollection(t('Etkinlik kaydı henüz yayımlanmadı', 'No events published yet'), t('Güncel sezon durumuna sezon sayfasından ulaşabilirsiniz.', 'Visit the season page for our latest update.'), t('Sezon durumunu inceleyin', 'View the season update'), '/robotlar/');
+  const upcoming = items.filter(item => isUpcomingEvent(item)).sort((a, b) => String(a.startDate).localeCompare(String(b.startDate)));
+  const hasDates = item => isCalendarDate(item.startDate) && isCalendarDate(item.endDate);
+  const past = items.filter(item => hasDates(item) && !isUpcomingEvent(item)).sort(newestStart);
+  // Events with missing or invalid dates are neither upcoming nor past; list them last without inventing a date.
+  const undated = items.filter(item => !hasDates(item));
+  const row = item => {
+    const path = eventPath(item);
+    return `<article class="event-row">${icon('calendar')}<div><h3>${e(item.title)}</h3>${para([item.date, item.location].filter(Boolean).join(' · '))}</div><div class="entry-actions">${path ? anchor(t('Etkinlik ayrıntıları', 'Event details'), path) : ''}${anchor(t('FIRST etkinlik sayfası', 'FIRST event page'), item.url, 'text-link', true)}</div></article>`;
+  };
+  const block = (id, kicker, title, list) => list.length ? `<section class="section" id="${id}">${heading(kicker, title)}<div class="event-list">${list.map(row).join('')}</div></section>` : '';
+  return `${upcoming.length && past.length ? sectionNav([[t('Yaklaşan', 'Upcoming'), 'yaklasan'], [t('Geçmiş', 'Past'), 'gecmis']], t) : ''}
+  ${block('yaklasan', t('Takvim', 'Calendar'), t('Yaklaşan etkinlikler', 'Upcoming events'), upcoming)}
+  ${block('gecmis', t('Arşiv', 'Archive'), t('Geçmiş etkinlikler', 'Past events'), past)}
+  ${block('tarihsiz', t('Takvim', 'Calendar'), t('Diğer etkinlikler', 'Other events'), undated)}`;
 }
-function article({ t, date }, item = {}) { return `<article class="article-content section"><div class="article-meta"><span class="tag">${e(item.category)}</span><span>${e(date(item.date))}</span></div>${item.image ? `<figure class="article-cover">${itemImage(item)}</figure>` : ''}<p class="lead">${e(item.summary)}</p><div class="article-body">${(item.paragraphs || []).map(para).join('')}</div>${item.url ? anchor(t('İlgili bağlantı', 'Related link'), item.url, 'text-link', true) : ''}</article><div class="section">${anchor(t('Tüm haberlere dön', 'Back to all news'), '/haberler/', 'button button-outline')}</div>`; }
+function event({ content, t, date, lang }, item = {}) {
+  const upcoming = isUpcomingEvent(item);
+  const program = publishedProgram(item), results = publishedResults(item), photos = eventPhotos(item);
+  const season = content.season || {};
+  const datesValid = isCalendarDate(item.startDate) && isCalendarDate(item.endDate);
+  const sections = [
+    [t('Genel bakış', 'Overview'), 'genel-bakis'],
+    ...(program.length ? [[t('Program', 'Schedule'), 'program']] : []),
+    ...(results.length ? [[t('Sonuçlar', 'Results'), 'sonuclar']] : []),
+    ...(photos.length ? [[t('Fotoğraflar', 'Photos'), 'fotograflar']] : []),
+  ];
+  const specs = [[t('Konum', 'Location'), item.location], [t('Organizatör', 'Organizer'), content.frcOrganizer?.name]].filter(([, value]) => value);
+  return `<section class="section af-robot-season" id="genel-bakis">
+    <div class="af-season-intro" data-reveal>
+      <p class="eyebrow">${FRC_NAME} · ${e(season.year || 2027)}</p>
+      ${item.summary ? `<p class="lead">${e(item.summary)}</p>` : ''}
+      ${specs.length ? specList(specs) : ''}
+      <div class="entry-actions">${anchor(t('FIRST etkinlik sayfası', 'FIRST event page'), item.url, 'button button-gold', true)}${anchor(t('Sezon sayfası', 'Season page'), '/robotlar/')}</div>
+    </div>
+    <aside class="af-event-panel" aria-label="${t('Etkinlik bilgileri', 'Event information')}" data-reveal data-reveal-delay="100">
+      <p class="eyebrow">${upcoming ? t('Yaklaşan etkinlik', 'Upcoming event') : t('Etkinlik', 'Event')}</p>
+      ${item.date ? `<p class="af-event-date">${e(item.date)}</p>` : ''}
+      ${datesValid ? `<div class="event-countdown" data-countdown-start="${e(item.startDate)}" data-countdown-end="${e(item.endDate)}" aria-live="off" hidden></div>` : ''}
+    </aside>
+  </section>
+  ${sections.length > 1 ? sectionNav(sections, t) : ''}
+  ${program.length ? `<section class="section" id="program"><h2 class="section-heading">${t('Etkinlik programı', 'Event schedule')}</h2>
+    <div class="timeline">${program.map(entry => `<article class="timeline-item"><div class="timeline-date">${e([formatContentDate(entry.date, lang) || entry.date, entry.time].filter(Boolean).join(' · '))}</div><div><h3>${e(entry.title)}</h3>${para(entry.description)}</div></article>`).join('')}</div>
+  </section>` : ''}
+  ${results.length ? `<section class="section" id="sonuclar"><h2 class="section-heading">${t('Etkinlik sonuçları', 'Event results')}</h2>
+    <div class="table-scroll"><table class="results-table">
+      <caption class="sr-only">${t('Etkinlik sonuçları', 'Event results')}</caption>
+      <thead><tr><th scope="col">${t('Başlık', 'Item')}</th><th scope="col">${t('Sonuç', 'Result')}</th></tr></thead>
+      <tbody>${results.map(entry => `<tr><th scope="row">${e(entry.label)}</th><td>${anchor(entry.result, entry.url, 'text-link', true) || e(entry.result)}</td></tr>`).join('')}</tbody>
+    </table></div>
+    ${anchor(t('Resmî sonuçlar', 'Official results'), item.url, 'text-link', true)}
+  </section>` : ''}
+  ${photos.length ? `<section class="section" id="fotograflar">${heading(t('Fotoğraflar', 'Photos'), t('Etkinlik fotoğrafları', 'Event photos'))}<div class="gallery-grid">${photos.map(photo => galleryPhoto(photo, t)).join('')}</div></section>` : ''}
+  <div class="section entry-actions">${anchor(t('Tüm etkinlikler', 'All events'), '/etkinlikler/', 'button button-outline')}${anchor(t('Takım galerisi', 'Team gallery'), '/galeri/')}</div>`;
+}
+function news({ content, t, date, lang }) {
+  const entries = routable(content.news).sort(newestDate);
+  if (!entries.length) return emptyCollection(t('Yazı henüz yayımlanmadı', 'No posts published yet'), t('Güncel sezon durumuna ve yarışma takvimine sezon sayfasından ulaşabilirsiniz.', 'Visit the season page for our latest update and competition schedule.'), t('Sezon durumunu inceleyin', 'View the season update'), '/robotlar/');
+  const present = new Set(entries.map(item => journalCategory(item.category, lang)));
+  const categories = journalCategories.map(pair => journalCategory(pair[0], lang)).filter(name => present.has(name));
+  return `<section class="section" data-collection>${filterBar(categories, t('Yazı ara', 'Search posts'), t)}<div class="archive-grid news-grid">${entries.map(item => { const category = journalCategory(item.category, lang); return `<article class="archive-card" ${filterAttrs(category, `${item.title} ${item.summary || ''} ${category}`)}><a class="card-media" href="/gunluk/${e(item.slug)}/" aria-label="${e(t(`${item.title} yazısını okuyun`, `Read ${item.title}`))}">${itemImage(item)}</a><div class="card-body"><div class="article-meta"><span class="tag">${e(category)}</span><span>${e(date(item.date))}</span></div><h3>${e(item.title)}</h3>${para(item.summary)}${anchor(t('Yazıyı okuyun', 'Read the post'), `/gunluk/${item.slug}/`)}</div></article>`; }).join('')}</div>${filterEmpty(t)}</section>`;
+}
+function article({ t, date, lang }, item = {}) { return `<article class="article-content section"><div class="article-meta"><span class="tag">${e(journalCategory(item.category, lang))}</span><span>${e(date(item.date))}</span></div>${item.image ? `<figure class="article-cover">${itemImage(item)}</figure>` : ''}<p class="lead">${e(item.summary)}</p><div class="article-body">${(item.paragraphs || []).map(para).join('')}</div>${item.url ? anchor(t('İlgili bağlantı', 'Related link'), item.url, 'text-link', true) : ''}</article><div class="section">${anchor(t('Takım Günlüğü’ne dön', 'Back to the journal'), '/gunluk/', 'button button-outline')}</div>`; }
 function gallery({ content, t }) {
-  const photos = allPhotos(content, t), videos = publicVideos(content.videos);
-  const categories = [...new Set(photos.map(photo => photo.category || t('Takım', 'Team')))];
+  const photos = allPhotos(content, t), videos = publicVideos(content.videos), albums = eventAlbums(content);
   const navigation = galleryNav('/galeri/', t);
-  if (!photos.length && !videos.length) return navigation + emptyCollection(t('Fotoğraf veya video henüz yayımlanmadı', 'No photos or videos published yet'), t('Takımımızı Instagram hesabından takip edebilirsiniz.', 'Follow the team on Instagram.'), t('Instagram’a gidin', 'Visit Instagram'), content.instagram);
-  return `${navigation}${photos.length && videos.length ? sectionNav([[t('Fotoğraflar', 'Photos'), 'fotograflar'], [t('Videolar', 'Videos'), 'videolar']], t) : ''}
-    ${photos.length ? `<section class="section" id="fotograflar" data-collection>${heading(t('Fotoğraflar', 'Photos'), t('Takım ve etkinlik fotoğrafları', 'Team and event photos'), '', anchor('Instagram', content.instagram, 'text-link', true))}${filterBar(categories, t('Fotoğraf ara', 'Search photos'), t)}<div class="gallery-grid">${photos.map(photo => galleryPhoto(photo, t)).join('')}</div>${filterEmpty(t)}</section>` : ''}
+  if (!photos.length && !videos.length && !albums.length) return navigation + emptyCollection(t('Fotoğraf veya video henüz yayımlanmadı', 'No photos or videos published yet'), t('Takımımızı Instagram hesabından takip edebilirsiniz.', 'Follow the team on Instagram.'), t('Instagram’a gidin', 'Visit Instagram'), content.instagram);
+  const groups = new Map();
+  for (const photo of photos) {
+    const name = photo.album || photo.category || t('Takım', 'Team');
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(photo);
+  }
+  const photoAlbums = [...groups];
+  const sections = [
+    ...photoAlbums.map(([name], index) => [name, `album-${index + 1}`]),
+    ...(albums.length ? [[t('Etkinlik albümleri', 'Event albums'), 'etkinlik-albumleri']] : []),
+    ...(videos.length ? [[t('Videolar', 'Videos'), 'videolar']] : []),
+  ];
+  return `${navigation}${sections.length > 1 ? sectionNav(sections, t) : ''}
+    ${photoAlbums.length ? `<div id="fotograflar">${photoAlbums.map(([name, list], index) => `<section class="section photo-album" aria-labelledby="album-${index + 1}">
+      <div class="section-heading project-album-heading"><div><h2 id="album-${index + 1}">${e(name)}</h2></div>${index === 0 ? anchor('Instagram', content.instagram, 'text-link', true) : ''}</div>
+      <div class="gallery-grid">${list.map(photo => galleryPhoto(photo, t)).join('')}</div>
+    </section>`).join('')}</div>` : ''}
+    ${albums.length ? `<section class="section" id="etkinlik-albumleri">${heading(t('Etkinlikler', 'Events'), t('Etkinlik albümleri', 'Event albums'))}<div class="archive-grid">${albums.map(({ event, photos: list }) => {
+      const href = `/etkinlikler/${event.slug}/#fotograflar`;
+      const cover = list[0];
+      return `<article class="archive-card"><a class="card-media" href="${e(href)}" aria-label="${e(t(`${event.title} albümünü açın`, `Open the ${event.title} album`))}">${image(cover.src, cover.alt, cover.width, cover.height)}</a><div class="card-body">${event.date ? `<span class="tag">${e(event.date)}</span>` : ''}<h3>${e(event.title)}</h3>${para(t(`${list.length} fotoğraf`, `${list.length} photos`))}${anchor(t('Albümü açın', 'Open album'), href)}</div></article>`;
+    }).join('')}</div></section>` : ''}
     ${videos.length ? `<section class="section" id="videolar">${heading(t('Video arşivi', 'Video archive'), t('Videolar', 'Videos'))}<div class="content-grid cols-2">${videos.map(video => `<article class="archive-card">${safeImageSrc(video.thumbnail) ? `<div class="card-media">${image(video.thumbnail, video.title)}</div>` : ''}<div class="card-body"><span class="tag">${e(video.category)}</span><h3>${e(video.title)}</h3>${para(video.description)}${anchor(t('Videoyu izleyin', 'Watch the video'), video.url, 'text-link', true)}</div></article>`).join('')}</div></section>` : ''}`;
 }
 function projectGallery({ content, t, lang }) {
@@ -386,7 +488,7 @@ function frc({ t }) {
     [t('Yarışma', 'Compete'), t('Takımlar ittifaklar kurarak yarışır ve edindikleri deneyimi paylaşır.', 'Teams compete in alliances and share what they’ve learned.')],
   ];
   return `<section class="section split-layout">
-    <div><p class="eyebrow">FIRST Robotics Competition</p><p class="lead">${t('Lise öğrencileri için robotik yarışması', 'A robotics competition for high school students')}</p></div>
+    <div><p class="eyebrow">${FRC_NAME}</p><p class="lead">${t('Lise öğrencileri için robotik yarışması', 'A robotics competition for high school students')}</p></div>
     <div>
       <p>${t('FRC, lise öğrencilerinin mentorlarıyla birlikte robot tasarladığı, ürettiği ve programladığı uluslararası bir robotik yarışmasıdır.', 'FRC is an international robotics competition where high school students work with mentors to design, build and program robots.')}</p>
       <p>${t('Her sezon açıklanan oyun, yeni bir mühendislik problemi getirir. Takımlar kendi robotlarını geliştirir ve sahada ittifaklar halinde yarışır.', 'Each season introduces a new game and engineering challenge. Teams develop their own robots and compete on the field in alliances.')}</p>
@@ -420,20 +522,23 @@ function sponsors({ content, t }) {
     ${organizer ? `<p class="organization-note">${e(t(`${organizer.name}, Türkiye’deki FRC etkinliklerinin organizatörüdür.`, `${organizer.name} organizes FRC events in Türkiye.`))}</p>` : ''}
   </section>
   <section class="section contact-callout" id="destek" data-reveal>
-    <div><p class="eyebrow">${t('Sponsorluk', 'Sponsorship')}</p><h2>${t('Takıma destek olun.', 'Support the team.')}</h2>${needs.length ? `<p>${needs.map(need => e(need.title)).join(' · ')}</p>` : ''}</div>
+    <div><p class="eyebrow">${t('Sponsorluk', 'Sponsorship')}</p><h2>${t('Takıma destek olun.', 'Sponsor the team.')}</h2>${needs.length ? `<p>${needs.map(need => e(need.title)).join(' · ')}</p>` : ''}</div>
     ${anchor(t('İhtiyaçları ve destek seçeneklerini inceleyin', 'See how you can help'), '/destek-ol/', 'button button-gold')}
   </section>`;
 }
 function support({ content, t }) {
   const needs = (Array.isArray(content.sponsorNeeds) ? content.sponsorNeeds : []).filter(need => need?.title);
-  const subject = encodeURIComponent(t('AIR FORCE 12414 Sponsorluk', 'AIR FORCE 12414 Sponsorship'));
-  const mailto = `mailto:${content.email}?subject=${subject}`;
-  const file = safeHref(content.sponsorshipFile);
-  const localFile = file.startsWith('/');
-  const documentLink = file ? `<a class="button button-outline" href="${e(file)}"${localFile ? ' download' : ' target="_blank" rel="noopener noreferrer"'}>${t('Takım sunumu (PDF)', 'Team presentation (PDF)')}</a>` : '';
+  const mailto = sponsorshipMailto(content, t);
+  const upcoming = selectUpcomingEvent(content.events);
+  const school = content.school.name, year = content.season?.year || 2027;
+  const place = upcoming ? `${upcoming.date}${upcoming.city ? `, ${upcoming.city}` : ''}` : '';
+  const context = upcoming
+    ? t(`${school} robotik takımı AIR FORCE #12414, ${year}’de ilk FRC sezonuna çıkıyor; sezonun ilk etkinliği ${upcoming.title} (${place}).`, `AIR FORCE #12414, the robotics team of ${school}, enters its first FRC season in ${year}, starting at the ${upcoming.title} (${place}).`)
+    : t(`${school} robotik takımı AIR FORCE #12414, ${year}’de ilk FRC sezonuna çıkıyor.`, `AIR FORCE #12414, the robotics team of ${school}, enters its first FRC season in ${year}.`);
   return `<section class="section support-intro">
     <p class="lead">${t('İlk FRC sezonumuz için robot parçaları, üretim hizmetleri ve yarışma giderleri konusunda desteğe ihtiyacımız var.', 'For our first FRC season, we’re looking for help with robot parts, fabrication and competition expenses.')}</p>
-    <div class="entry-actions">${anchor(t('Sponsorluk için yazın', 'Email us about sponsorship'), mailto, 'button button-gold')}${documentLink}</div>
+    <p class="support-context">${e(context)} ${anchor(t('Sezon takvimi', 'Season calendar'), '/etkinlikler/')}</p>
+    <div class="entry-actions">${anchor(t('Sponsorluk için yazın', 'Email us about sponsorship'), mailto, 'button button-gold')}</div>
     <p class="support-email"><span>${e(content.email)}</span>${content.emailIsPlaceholder ? '' : copyEmailControl(content.email, t)}</p>
   </section>
   ${needs.length ? `<section class="section support-needs" aria-labelledby="support-needs-title">
@@ -443,11 +548,11 @@ function support({ content, t }) {
       ${Array.isArray(need.examples) && need.examples.length ? `<ul>${need.examples.filter(Boolean).map(example => `<li>${e(example)}</li>`).join('')}</ul>` : ''}
     </article>`).join('')}</div>
     <p class="support-note">${t('E-postanızda katkı sağlayabileceğiniz alanı ve destek biçimini belirtebilirsiniz.', 'Tell us which area you’d like to support and how you can help.')}</p>
-    ${anchor(t('Sponsorlar ve kurumlar', 'Sponsors and organizations'), '/sponsorluk/')}
+    ${anchor(t('Sponsorlarımız', 'Our sponsors'), '/sponsorluk/')}
   </section>` : ''}`;
 }
 function contact({ content, t }) {
-  const events = publishedRecords(content.events);
+  const events = publishedRecords(content.events).filter(item => String(item.title || '').trim());
   const faqs = publishedRecords(content.faq);
 
   return `<section class="section"><p class="lead">${t('Takım, projeler ve sponsorluk hakkında e-posta veya Instagram üzerinden bize ulaşabilirsiniz.', 'Contact us by email or Instagram about the team, our projects or sponsorship.')}</p>
@@ -459,7 +564,11 @@ function contact({ content, t }) {
         ${anchor('@airforce12414', content.instagram, 'contact-value', true)}
       </article>
     </div>
-    <div class="section-actions">${anchor(content.school.name, content.school.url, 'text-link', true)}</div>
+    <div class="contact-callout" id="sponsorluk-is-birligi">
+      <div><p class="eyebrow">${t('Sponsorluk ve iş birliği', 'Sponsorship and partnerships')}</p><h2>${t('Kurumlar için', 'For organizations')}</h2><p>${t('Sponsorluk ve iş birliği önerilerinizi hazır konu satırlı e-postayla iletebilirsiniz.', 'Send sponsorship and partnership enquiries with a pre-filled subject line.')}</p></div>
+      <div class="entry-actions">${anchor(t('Sponsorluk için yazın', 'Email us about sponsorship'), sponsorshipMailto(content, t), 'button button-gold')}${anchor(t('Sponsor olun', 'Sponsor the team'), '/destek-ol/')}</div>
+    </div>
+    <div class="section-actions entry-actions">${events.length ? anchor(t('Etkinlik takvimi', 'Event calendar'), '/etkinlikler/', 'text-link') : ''}${anchor(content.school.name, content.school.url, 'text-link', true)}</div>
   </section>
   <section class="section" id="gizlilik">
     <h2 class="section-heading">${t('Site ve gizlilik', 'Website and privacy')}</h2>
@@ -467,15 +576,12 @@ function contact({ content, t }) {
     <p>${t('Site Vercel üzerinden sunulur. Takıma e-posta gönderirseniz adresiniz ve iletiniz takıma ulaşır. Instagram bağlantısı sizi Instagram’a götürür.', 'Vercel hosts this site. If you email the team, the team receives your address and message. The Instagram link takes you to Instagram.')}</p>
     <div class="entry-actions">${anchor(t('Vercel gizlilik bildirimi', 'Vercel Privacy Notice'), 'https://vercel.com/legal/privacy-notice', 'text-link', true)}${anchor(t('Okulun kişisel veri aydınlatma metni', 'School privacy notice (Turkish)'), 'https://ankara.istek.k12.tr/sites/default/files/2024-01/aydinlatma-formu.pdf', 'text-link', true)}</div>
   </section>
-  ${events.length ? `<section class="section"><h2 class="section-heading">${t('Etkinlikler', 'Events')}</h2>
-    <div class="event-list">${events.map(event => `<article class="event-row">${icon('calendar')}<div><h3>${e(event.title)}</h3>${para([event.date, event.location].filter(Boolean).join(' · '))}</div>${anchor(t('Etkinlik bilgisi', 'Event details'), event.url, 'text-link', true)}</article>`).join('')}</div>
-  </section>` : ''}
   ${faqs.length ? `<section class="section"><h2 class="section-heading">${t('Sık sorulanlar', 'Frequently asked questions')}</h2>
     <div class="accordion-list">${faqs.map(faq => `<details class="accordion"><summary>${e(faq.question)}</summary><div>${para(faq.answer)}</div></details>`).join('')}</div>
   </section>` : ''}`;
 }
 
-const renderers = { team, history, awards, robots, robot, impact, project, resources, news, article, gallery, projectGallery, frc, sponsors, support, contact };
+const renderers = { team, history, awards, robots, robot, impact, project, resources, events, event, news, article, gallery, projectGallery, frc, sponsors, support, contact };
 export function renderContent(kind, item, lang = 'tr') {
   if (!Object.hasOwn(renderers, kind)) throw new Error(`Unknown content page: ${kind}`);
   const content = siteContent(lang);

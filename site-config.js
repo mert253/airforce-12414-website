@@ -5,8 +5,8 @@ export const siteConfig = {
     name: "İSTEK Ankara Okulları",
     url: "https://ankara.istek.k12.tr/tr",
   },
-  // Site yayına çıktığında gerçek HTTPS alan adını yazın; yerelde boş bırakın.
-  siteUrl: "",
+  // Asıl adres. team12414.org, vercel.json içinde bu adrese yönlendirilir.
+  siteUrl: "https://team12414.com",
   seasonStatus: "İlk FIRST Robotics Competition sezonumuza hazırlanıyoruz.",
   season: {
     year: 2027,
@@ -119,19 +119,27 @@ export const siteConfig = {
       },
     },
   ],
-  sponsorshipFile: "",
   events: [
     {
+      slug: "ankara-regional",
       title: "Ankara Regional",
+      summary: "AIR FORCE #12414’ün ilk FIRST Robotics Competition sezonundaki ilk resmî etkinliği.",
+      city: "Ankara",
+      country: "TR",
       date: "19–21 Mart 2027",
       startDate: "2027-03-19",
       endDate: "2027-03-21",
       location: "ODTÜ GVO Lisesi Spor Salonu, Çankaya / Ankara",
       url: "https://frc-events.firstinspires.org/2027/TUAK",
       status: "published",
+      // Program, sonuç ve fotoğraflar yalnızca onaylı bilgiyle doldurulur (contentTemplates.eventProgramItem, eventResult, photo).
+      program: [],
+      results: [],
+      photos: [],
       en: {
         date: "March 19–21, 2027",
         location: "ODTÜ GVO High School Sports Hall, Çankaya, Ankara",
+        summary: "The first official event of AIR FORCE #12414’s first FIRST Robotics Competition season.",
       },
     },
   ],
@@ -166,10 +174,10 @@ export const siteConfig = {
     {
       status: "published",
       question: "Takıma nasıl sponsor veya destek olabiliriz?",
-      answer: "Robot parçaları, atölye ekipmanları, üretim/imalat hizmetleri, teknik danışmanlık veya yarışma ve ulaşım giderleri için destek sağlayabilirsiniz. Destek seçeneklerini Destek olun sayfamızda inceleyebilir ve airforce@istek.k12.tr adresinden bize ulaşabilirsiniz.",
+      answer: "Robot parçaları, atölye ekipmanları, üretim/imalat hizmetleri, teknik danışmanlık veya yarışma ve ulaşım giderleri için destek sağlayabilirsiniz. Destek seçeneklerini Sponsor olun sayfamızda inceleyebilir ve airforce@istek.k12.tr adresinden bize ulaşabilirsiniz.",
       en: {
         question: "How can we sponsor or support the team?",
-        answer: "You can support us with robot parts, workshop equipment, fabrication services, technical mentoring, or competition and travel expenses. See our Support the team page or email us at airforce@istek.k12.tr.",
+        answer: "You can support us with robot parts, workshop equipment, fabrication services, technical mentoring, or competition and travel expenses. See our Sponsor the team page or email us at airforce@istek.k12.tr.",
       },
     },
     {
@@ -200,14 +208,17 @@ export const siteConfig = {
 export const contentTemplates = {
   robot: { status: "draft", slug: "robot-adi", name: "", year: "", game: "", description: "", image: "", imageAlt: "", imageWidth: 1600, imageHeight: 1000, mechanisms: [], specs: [], results: [], photos: [], cadUrl: "", codeUrl: "", videoUrl: "", gameUrl: "" },
   project: { status: "draft", slug: "proje-adi", title: "", category: "Eğitim", date: "", goal: "", audience: "", description: "", results: "", image: "", imageAlt: "", imageWidth: 1600, imageHeight: 1000, evidenceUrl: "", photos: [] },
-  news: { status: "draft", slug: "haber-basligi", title: "", category: "Takımdan", date: "", summary: "", paragraphs: [], image: "", imageAlt: "", imageWidth: 1600, imageHeight: 1000 },
+  // category: Takımdan | Özel Günler | FRC Gelişmeleri | Teknik
+  news: { status: "draft", slug: "yazi-basligi", title: "", category: "Takımdan", date: "", summary: "", paragraphs: [], image: "", imageAlt: "", imageWidth: 1600, imageHeight: 1000 },
   resource: { status: "draft", title: "", topic: "Yazılım", category: "", year: "", level: "Başlangıç", description: "", format: "PDF", url: "", download: false, en: { title: "", topic: "Software", category: "", level: "Beginner", description: "" } },
   person: { status: "draft", name: "", role: "", team: "", image: "", imageAlt: "", imageWidth: 600, imageHeight: 750 },
   history: { status: "draft", year: "", title: "", description: "", robotSlug: "", image: "" },
   award: { status: "draft", year: "", title: "", event: "", url: "" },
-  photo: { status: "draft", src: "", alt: "", caption: "", category: "Takım", width: 1600, height: 1000 },
+  photo: { status: "draft", src: "", alt: "", caption: "", category: "Takım", album: "", width: 1600, height: 1000 },
   video: { status: "draft", title: "", category: "Robot", url: "", thumbnail: "", description: "" },
-  event: { status: "draft", title: "", date: "", startDate: "", endDate: "", location: "", url: "" },
+  event: { status: "draft", slug: "etkinlik-adi", title: "", summary: "", date: "", startDate: "", endDate: "", location: "", city: "", country: "TR", url: "", program: [], results: [], photos: [], en: { date: "", location: "", summary: "" } },
+  eventProgramItem: { status: "draft", date: "2027-03-19", time: "", title: "", description: "", en: { title: "", description: "" } },
+  eventResult: { status: "draft", label: "", result: "", url: "", en: { label: "", result: "" } },
   faq: { status: "draft", question: "", answer: "" },
   subteam: { status: "draft", name: "", description: "", en: { name: "", description: "" } },
 };

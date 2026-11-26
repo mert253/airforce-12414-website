@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { localizedPath, siteContent, translator } from './locale.js';
 import { renderHomeHero } from './home-hero.js';
 import { selectUpcomingEvent, formatContentDate } from './season-utils.js';
-import { buildContentRoutes, contentRoutes, renderContent, publishedRecords, safeImageSrc, safeObjectPosition, newestDate, newestYear } from './content-pages.js';
+import { buildContentRoutes, contentRoutes, renderContent, publishedRecords, journalCategory, eventPath, safeImageSrc, safeObjectPosition, newestDate, newestYear } from './content-pages.js';
 
 const teamName = 'AIR FORCE #12414';
 const organization = 'Ankara İstech Robotics';
@@ -54,10 +54,20 @@ function sponsorMark(sponsor) {
   </div>`;
 }
 
-function archiveLinks(t) {
+function agendaLinks(t, event) {
+  const links = [];
+  if (availableContent.has('/etkinlikler/')) links.push([t('Etkinlikler', 'Events'), '/etkinlikler/']);
+  const path = eventPath(event);
+  if (path) links.push([event.title, path]);
+  if (availableContent.has('/gunluk/')) links.push([t('Takım Günlüğü', 'Team journal'), '/gunluk/']);
+  return links;
+}
+function teamArchiveLinks(t) {
   return [
-    [t('Haberler', 'News'), '/haberler/'],
-    [t('Toplumsal etki', 'Outreach'), '/toplumsal-etki/'],
+    [t('Tarihçe', 'History'), '/takim/tarihce/'],
+    [t('Başarılar', 'Awards'), '/takim/basarilar/'],
+    [t('Toplumsal etki', 'Community impact'), '/toplumsal-etki/'],
+    [t('Kaynaklar', 'Resources'), '/kaynaklar/'],
   ].filter(([, path]) => availableContent.has(path));
 }
 const galleryLinks = t => [[t('Takım galerisi', 'Team gallery'), '/galeri/'], [t('Proje galerisi', 'Project gallery'), '/proje-galerisi/']];
@@ -70,8 +80,7 @@ function homeContent(lang = 'tr') {
   const robot = published(content.robots).sort(newestYear)[0];
   const news = published(content.news).sort(newestDate).slice(0, 3);
   const robotPhoto = robot && img(robot.image, robot.imageAlt || robot.name, 'robot-stage-image', robot.imageWidth, robot.imageHeight);
-  const explore = archiveLinks(t).filter(([, href]) => href !== '/haberler/');
-  if (availableContent.has('/kaynaklar/')) explore.push([t('Kaynaklar', 'Resources'), '/kaynaklar/']);
+  const explore = teamArchiveLinks(t).filter(([, href]) => ['/toplumsal-etki/', '/kaynaklar/'].includes(href));
   const updated = formatContentDate(content.season?.updatedAt, lang);
 
   return `<section class="home-photo" aria-labelledby="team-photo-title"><div class="container">
@@ -85,6 +94,7 @@ function homeContent(lang = 'tr') {
         <h2>${e(content.season?.year || '2027')}</h2>
         <p class="season-subtitle">${e(content.season?.status || t('Sezon durumu', 'Season status'))}</p>
         <a class="text-link" href="/robotlar/">${t('Sezonun ayrıntıları', 'Season details')} ${icon()}</a>
+        <div class="season-frc-note"><p>${t('FIRST Robotics Competition: lise takımlarının her sezon yeni bir oyun için robot geliştirdiği uluslararası program.', 'FIRST Robotics Competition: an international program where high school teams build robots for a new game each season.')}</p><a class="text-link" href="/frc/">${t('FRC nasıl işliyor?', 'How does FRC work?')} ${icon()}</a></div>
       </div>
       <div class="season-feature-body">
         <p>${e(content.season?.description || content.seasonStatus)}</p>
@@ -95,6 +105,7 @@ function homeContent(lang = 'tr') {
           <p class="season-date">${e(event.date)}</p>
           <p class="season-location">${e(event.location)}</p>
           <div class="event-countdown" data-countdown-start="${e(event.startDate)}" data-countdown-end="${e(event.endDate)}" aria-live="off" hidden></div>
+          ${eventPath(event) ? `<a class="text-link" href="${eventPath(event)}">${t('Etkinlik ayrıntıları', 'Event details')} ${icon()}</a>` : ''}
           ${a(t('Resmî etkinlik bilgisi ', 'Official event information ') + icon('external'), event.url, 'class="text-link" target="_blank" rel="noopener noreferrer"')}
         </article>` : ''}
       </div>
@@ -104,13 +115,9 @@ function homeContent(lang = 'tr') {
     <div class="home-robot-copy"><h2>${e(robot.name || robot.title)}</h2>${robot.description ? `<p>${e(robot.description)}</p>` : ''}<a class="text-link" href="/robotlar/${e(robot.slug)}/">${t('Robotun teknik ayrıntıları', 'Robot specifications')} ${icon()}</a></div>
     ${robotPhoto ? `<div class="robot-stage">${robotPhoto}</div>` : ''}
   </div></section>` : ''}
-  <section class="section home-frc home-frc-strip"><div class="container home-frc-grid" data-reveal>
-    <div><p class="eyebrow">${t('Yarışmayı tanıyın', 'About the competition')}</p><h2>FIRST Robotics Competition</h2></div>
-    <div><p>${t('Lise takımlarının her sezon yeni bir oyun için robot geliştirdiği uluslararası program.', 'An international program where high school teams build robots for a new game each season.')}</p><a class="text-link" href="/frc/">${t('FRC nasıl işliyor?', 'How does FRC work?')} ${icon()}</a></div>
-  </div></section>
   <section class="section home-partners" id="sponsorlar"><div class="container" data-reveal>
     <div class="partners-layout"><div><h2>${t('Sponsorlarımız<br>ve kurumlar', 'Sponsors and<br>organizations')}</h2><a class="text-link" href="/sponsorluk/">${t('Kurumları tanıyın', 'Meet the organizations')} ${icon()}</a></div><div class="partner-marks">${[...content.sponsors, content.schoolMark, content.frcOrganizer].map(sponsorMark).join('')}</div></div>
-    <div class="home-support"><div><h3>${t('AIR FORCE’a destek olun.', 'Support AIR FORCE.')}</h3><p>${t('Malzeme, üretim hizmeti veya yarışma desteği için bizimle iletişime geçin.', 'Get in touch to support the team with materials, manufacturing services or competition costs.')}</p></div><a class="button button-gold" href="/destek-ol/">${t('Sponsorluk seçenekleri', 'Ways to support')} ${icon()}</a></div>
+    <div class="home-support"><div><h3>${t('AIR FORCE’a destek olun.', 'Support AIR FORCE.')}</h3><p>${t('Malzeme, üretim hizmeti veya yarışma desteği için bizimle iletişime geçin.', 'Get in touch to support the team with materials, manufacturing services or competition costs.')}</p></div><a class="button button-gold" href="/destek-ol/">${t('Sponsor olun', 'Sponsor the team')} ${icon()}</a></div>
   </div></section>
   ${explore.length ? `<section class="section home-explore"><div class="container" data-reveal>
     <h2 class="section-heading">${t('Takım arşivi', 'Team archive')}</h2><div class="explore-grid">
@@ -118,10 +125,10 @@ function homeContent(lang = 'tr') {
     </div>
   </div></section>` : ''}
   ${news.length ? `<section class="section home-news"><div class="container">
-    <div class="section-heading"><h2>${t('Haberler', 'News')}</h2><a class="text-link" href="/haberler/">${t('Tüm haberler', 'All news')} ${icon()}</a></div>
+    <div class="section-heading"><h2>${t('Takım Günlüğü', 'Team journal')}</h2><a class="text-link" href="/gunluk/">${t('Tüm yazılar', 'All posts')} ${icon()}</a></div>
     <div class="content-grid cols-3">${news.map(item => { const date = formatContentDate(item.date, lang); return `<article class="content-card">
       ${item.image ? `<div class="card-media">${img(item.image, item.imageAlt || item.title)}</div>` : ''}
-      <div class="card-body">${date ? `<time class="news-date" datetime="${e(item.date)}">${e(date)}</time>` : ''}<h3><a href="/haberler/${e(item.slug)}/">${e(item.title)}</a></h3>${item.summary ? `<p>${e(item.summary)}</p>` : ''}</div>
+      <div class="card-body"><div class="article-meta">${date ? `<time class="news-date" datetime="${e(item.date)}">${e(date)}</time>` : ''}<span class="tag">${e(journalCategory(item.category, lang))}</span></div><h3><a href="/gunluk/${e(item.slug)}/">${e(item.title)}</a></h3>${item.summary ? `<p>${e(item.summary)}</p>` : ''}</div>
     </article>`; }).join('')}</div>
   </div></section>` : ''}`;
 }
@@ -157,38 +164,36 @@ function navHTML(page) {
   if (publishedRecords(content.subteams).length) teamLinks.splice(1, 0, [t('Takım nasıl çalışıyor?', 'How the team works'), '/takim/#calisma-alanlari']);
   if (publishedRecords(content.students).length) teamLinks.push([t('Öğrenciler', 'Students'), '/takim/#ekip']);
   if (publishedRecords(content.mentors).length) teamLinks.push([t('Mentorlar', 'Mentors'), '/takim/#mentorlar']);
-  if (availableContent.has('/takim/tarihce/')) teamLinks.push([t('Tarihçe', 'History'), '/takim/tarihce/']);
-  if (availableContent.has('/takim/basarilar/')) teamLinks.push([t('Başarılar', 'Awards'), '/takim/basarilar/']);
+  teamLinks.push(...teamArchiveLinks(t).filter(([, href]) => href !== '/kaynaklar/'));
   const robotLinks = [[t('Sezona genel bakış', 'Season overview'), '/robotlar/']];
   if (published(content.robots).length) robotLinks.push([t('Robot arşivi', 'Robot archive'), '/robotlar/#robot-arsivi']);
   const link = ([label, href], cls = 'nav-link') =>
     `<a href="${href}" class="${cls}${page.originalPath === href ? ' is-active' : ''}"${page.originalPath === href ? ' aria-current="page"' : ''}>${e(label)}</a>`;
-  const group = (label, links) => `<details class="nav-group"${links.some(([, href]) => href.split('#')[0] === page.originalPath) ? ' data-current' : ''}>
-    <summary>${label}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></summary>
+  const isCurrent = ([, href]) => { const base = href.split('#')[0]; const here = page.originalPath || page.path || ''; return base === here || (base !== '/' && here.startsWith(base)); };
+  const group = (label, links) => `<details class="nav-group"${links.some(isCurrent) ? ' data-current' : ''}>
+    <summary>${e(label)}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></summary>
     <div class="nav-dropdown">${links.map(item => link(item, 'nav-sub-link')).join('')}</div>
   </details>`;
-  const archives = archiveLinks(t);
+  const agenda = agendaLinks(t, selectUpcomingEvent(siteContent(page.lang).events));
   const robotsLabel = t('Sezon ve robotlar', 'Season and robots');
   return group(t('Takımımız', 'Our team'), teamLinks) + (robotLinks.length > 1 ? group(robotsLabel, robotLinks) : link([robotsLabel, '/robotlar/'])) +
     link(['FIRST & FRC', '/frc/']) +
+    (agenda.length > 1 ? group(t('Gündem', 'News & events'), agenda) : agenda.length ? link(agenda[0]) : '') +
     group(t('Galeriler', 'Galleries'), galleryLinks(t)) +
-    (archives.length ? group(t('Takımdan', 'Team updates'), archives) : '') +
     (availableContent.has('/kaynaklar/') ? link([t('Kaynaklar', 'Resources'), '/kaynaklar/']) : '') +
-    group(t('Sponsorlar', 'Sponsors'), [[t('Sponsorlar ve kurumlar', 'Sponsors and organizations'), '/sponsorluk/'], [t('Sponsor olun', 'Sponsor the team'), '/destek-ol/']]) +
+    group(t('Sponsorlar', 'Sponsors'), [[t('Sponsorlarımız', 'Our sponsors'), '/sponsorluk/'], [t('Sponsor olun', 'Sponsor the team'), '/destek-ol/']]) +
     link([t('İletişim', 'Contact'), '/iletisim/']);
 }
 function publicUrl(path) {
   try { const base=new URL(content.siteUrl);return base.protocol==='https:' ? new URL(path,base).href : ''; } catch {return '';}
 }
 function footerNavigation(t) {
-  const teamLinks = [[t('Takımımız', 'Our team'), '/takim/'], [t('Robotlarımız', 'Our robots'), '/robotlar/'], ['FIRST & FRC', '/frc/']];
-  if (availableContent.has('/takim/tarihce/')) teamLinks.push([t('Tarihçemiz', 'Our history'), '/takim/tarihce/']);
-  if (availableContent.has('/takim/basarilar/')) teamLinks.push([t('Başarılarımız', 'Our awards'), '/takim/basarilar/']);
-  const archive = [...galleryLinks(t), ...archiveLinks(t)];
-  if (availableContent.has('/kaynaklar/')) archive.push([t('Kaynaklar', 'Resources'), '/kaynaklar/']);
+  const teamLinks = [[t('Takımımız', 'Our team'), '/takim/'], [t('Sezon ve robotlar', 'Season and robots'), '/robotlar/'], ['FIRST & FRC', '/frc/'], ...teamArchiveLinks(t)];
+  const agenda = agendaLinks(t).filter(([, href]) => ['/etkinlikler/', '/gunluk/'].includes(href));
   const links = items => items.map(([label, href]) => a(e(label), href)).join('');
   return `<nav aria-label="${t('Takım bağlantıları', 'Team links')}"><h2>${t('Takım', 'Team')}</h2>${links(teamLinks)}</nav>
-    <nav aria-label="${t('Arşiv bağlantıları', 'Archive links')}"><h2>${t('Arşiv', 'Archive')}</h2>${links(archive)}</nav>
+    ${agenda.length ? `<nav aria-label="${t('Gündem bağlantıları', 'News and events links')}"><h2>${e(t('Gündem', 'News & events'))}</h2>${links(agenda)}</nav>` : ''}
+    <nav aria-label="${t('Galeri bağlantıları', 'Gallery links')}"><h2>${t('Galeriler', 'Galleries')}</h2>${links(galleryLinks(t))}</nav>
     <nav aria-label="${t('Destek ve iletişim', 'Support and contact')}"><h2>${t('Destek ve iletişim', 'Support and contact')}</h2>
       ${links([[t('Sponsorlarımız', 'Our sponsors'), '/sponsorluk/'], [t('Sponsor olun', 'Sponsor the team'), '/destek-ol/'], [t('İletişim', 'Contact'), '/iletisim/']])}
     </nav>`;
@@ -200,7 +205,7 @@ function siteHeader(page) {
   const alternate = localizedPath(page.hidden ? '/' : (page.originalPath || page.path), otherLang);
   return `<div class="page-loader" aria-hidden="true">
     <div class="page-loader-content">
-      <div class="page-loader-emblem"><img class="page-loader-pegasus" src="/assets/pegasus-480.webp" alt="" width="480" height="480" decoding="async"><span class="page-loader-shine"></span></div>
+      <div class="page-loader-emblem"><img class="page-loader-pegasus" src="/assets/pegasus-480.webp" alt="" width="480" height="480" fetchpriority="high" decoding="sync"><span class="page-loader-shine"></span></div>
       <p class="page-loader-brand">AIR <span>FORCE</span></p><span class="page-loader-number">FRC 12414</span>
     </div>
   </div>
@@ -260,6 +265,8 @@ function pageIntroduction(page) {
   const t = translator(page.lang);
   const introductions = {
     team: t('Ankara İstech Robotics Force. İSTEK Ankara Okulları’nın FIRST Robotics Competition takımı.', 'Ankara İstech Robotics Force, the FIRST Robotics Competition team of İSTEK Ankara Schools.'),
+    events: t('AIR FORCE’un katıldığı FRC etkinlikleri: tarih, konum ve resmî bağlantılar.', 'The FRC events AIR FORCE takes part in: dates, venues and official links.'),
+    news: t('Takımdan haberler, özel günler, FRC gelişmeleri ve teknik yazılar.', 'Team news, special days, FRC updates and technical posts.'),
     robots: t('AIR FORCE’un sezonları, robot geliştirme çalışmaları ve yarışma takvimi.', 'AIR FORCE seasons, robot development and competition schedule.'),
     sponsors: t('Robot geliştirme ve yarışma hazırlıklarımızı destekleyen kurumlarla tanışın.', 'Meet the organizations that support our robot development and competition preparation.'),
     support: t('Malzeme, üretim ve yarışma desteğinizle öğrencilerin mühendislik çalışmalarına katkı sağlayın.', 'Help students build and compete by supporting materials, manufacturing or competition costs.'),
@@ -270,6 +277,29 @@ function pageIntroduction(page) {
     resources: t('FRC takımlarının kendi çalışmalarına uyarlayabileceği dosyalar.', 'Files that FRC teams can adapt for their own work.'),
   };
   return introductions[page.kind] ? `<p>${e(introductions[page.kind])}</p>` : '';
+}
+function eventSchema(event, pageUrl, organizer) {
+  const detail = eventPath(event);
+  const eventUrl = (detail && pageUrl) || (url(event.url) ? event.url : '');
+  const ogImage = publicUrl('/assets/og-image.jpg');
+  return {
+    '@type': 'Event',
+    name: event.title,
+    startDate: event.startDate,
+    endDate: event.endDate,
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: 'https://schema.org/EventScheduled',
+    location: {
+      '@type': 'Place',
+      name: event.location,
+      ...(event.city ? { address: { '@type': 'PostalAddress', addressLocality: event.city, addressCountry: event.country || 'TR' } } : {}),
+    },
+    ...(event.summary ? { description: event.summary } : {}),
+    ...(ogImage ? { image: ogImage } : {}),
+    ...(eventUrl ? { url: eventUrl } : {}),
+    ...(detail && url(event.url) ? { sameAs: event.url } : {}),
+    organizer,
+  };
 }
 function buildStructuredData(page, lang) {
   const t = translator(lang);
@@ -295,26 +325,18 @@ function buildStructuredData(page, lang) {
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: t('Ana sayfa', 'Home'), ...(homeUrl ? { item: homeUrl } : {}) },
-        { '@type': 'ListItem', position: 2, name: page.title, ...(currentUrl ? { item: currentUrl } : {}) },
+        ...(page.parent ? [{ '@type': 'ListItem', position: 2, name: page.parent.title, ...(publicUrl(localizedPath(page.parent.path, lang)) ? { item: publicUrl(localizedPath(page.parent.path, lang)) } : {}) }] : []),
+        { '@type': 'ListItem', position: page.parent ? 3 : 2, name: page.title, ...(currentUrl ? { item: currentUrl } : {}) },
       ],
     });
   }
 
+  const organizer = { '@type': 'Organization', name: localized.frcOrganizer.name, url: localized.frcOrganizer.url };
   if (home || page.kind === 'robots') {
     const event = selectUpcomingEvent(localized.events);
-    if (event) {
-      graph.push({
-        '@type': 'Event',
-        name: event.title,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-        eventStatus: 'https://schema.org/EventScheduled',
-        location: { '@type': 'Place', name: event.location },
-        ...(url(event.url) ? { url: event.url } : {}),
-        organizer: { '@type': 'Organization', name: localized.frcOrganizer.name, url: localized.frcOrganizer.url },
-      });
-    }
+    if (event) graph.push(eventSchema(event, eventPath(event) ? publicUrl(localizedPath(eventPath(event), lang)) : '', organizer));
+  } else if (page.kind === 'event' && page.item) {
+    graph.push(eventSchema(page.item, publicUrl(page.path), organizer));
   }
 
   if (page.kind === 'contact') {
@@ -344,7 +366,7 @@ export function renderPage(html,page) {
   const home=originalPath==='/';
   const title=home ? `${teamName} | ${organization}` : `${page.title} | ${teamName}`;
   const canonical=publicUrl(page.path);
-  const ogImage=publicUrl('/assets/pegasus.png');
+  const ogImage=publicUrl('/assets/og-image.jpg');
   const noindex = page.hidden || page.noindex;
   const alternates = noindex ? '' : ['tr', 'en', 'x-default'].map(code => {
     const path = localizedPath(originalPath, code === 'x-default' ? 'tr' : code);
@@ -354,11 +376,11 @@ export function renderPage(html,page) {
   return html
     .replace('<html lang="tr">', `<html lang="${lang}">`)
     .replace('<!-- site-hero -->', () => pageLinks(renderHomeHero(lang), lang))
-    .replace('<!-- site-head -->',()=>`<meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0b1728"><meta name="description" content="${e(page.description)}"><title>${e(title)}</title><meta property="og:title" content="${e(title)}"><meta property="og:description" content="${e(page.description)}"><meta property="og:type" content="website"><meta property="og:site_name" content="${teamName}"><meta property="og:locale" content="${t('tr_TR', 'en_GB')}"><meta property="og:locale:alternate" content="${t('en_GB', 'tr_TR')}"><meta name="twitter:card" content="${ogImage ? 'summary_large_image' : 'summary'}">${noindex ? '<meta name="robots" content="noindex, follow">':''}${canonical&&!noindex ? `<link rel="canonical" href="${e(canonical)}"><meta property="og:url" content="${e(canonical)}">`:''}${ogImage ? `<meta property="og:image" content="${e(ogImage)}">`:''}${structuredData}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/logo.png"><link rel="manifest" href="/manifest.webmanifest"><link rel="preload" href="/assets/fonts/e4af272ccee01ff0-s.p.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/assets/fonts/reference-fonts.css"><link rel="stylesheet" href="/styles.css">`)
+    .replace('<!-- site-head -->',()=>`<meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0b1728"><meta name="description" content="${e(page.description)}"><title>${e(title)}</title><meta property="og:title" content="${e(title)}"><meta property="og:description" content="${e(page.description)}"><meta property="og:type" content="website"><meta property="og:site_name" content="${teamName}"><meta property="og:locale" content="${t('tr_TR', 'en_GB')}"><meta property="og:locale:alternate" content="${t('en_GB', 'tr_TR')}"><meta name="twitter:card" content="${ogImage ? 'summary_large_image' : 'summary'}">${noindex ? '<meta name="robots" content="noindex, follow">':''}${canonical&&!noindex ? `<link rel="canonical" href="${e(canonical)}"><meta property="og:url" content="${e(canonical)}">`:''}${ogImage ? `<meta property="og:image" content="${e(ogImage)}">`:''}${structuredData}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><link rel="preload" href="/assets/fonts/e4af272ccee01ff0-s.p.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/styles.css">`)
     .replace('<meta charset="UTF-8">', () => `<meta charset="UTF-8"><script>${loaderBootstrap}</script>`)
     .replace('<!-- site-header -->',()=>siteHeader(page))
     .replace('<link rel="stylesheet" href="/styles.css">', '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/content-extras.css"><link rel="stylesheet" href="/redesign.css"><link rel="stylesheet" href="/page-redesign.css"><link rel="stylesheet" href="/page-loader.css">')
-    .replace('<!-- site-content -->',()=>pageLinks(home ? page.body() : `<header class="page-heading${['support', 'sponsors', 'contact'].includes(page.kind) ? ' page-heading-compact' : ''}"><nav class="breadcrumb" aria-label="${t('Sayfa yolu', 'Breadcrumb')}"><a href="/">${t('Ana sayfa', 'Home')}</a><span aria-hidden="true">/</span><span>${e(page.title)}</span></nav><h1>${e(page.title)}</h1>${pageIntroduction(page)}</header>${page.body()}`, lang))
+    .replace('<!-- site-content -->',()=>pageLinks(home ? page.body() : `<header class="page-heading${['support', 'sponsors', 'contact'].includes(page.kind) ? ' page-heading-compact' : ''}"><nav class="breadcrumb" aria-label="${t('Sayfa yolu', 'Breadcrumb')}"><a href="/">${t('Ana sayfa', 'Home')}</a><span aria-hidden="true">/</span>${page.parent ? `<a href="${e(page.parent.path)}">${e(page.parent.title)}</a><span aria-hidden="true">/</span>` : ''}<span>${e(page.title)}</span></nav><h1>${e(page.title)}</h1>${pageIntroduction(page)}</header>${page.body()}`, lang))
     .replace('<!-- site-footer -->',()=>siteFooter(lang))
     .replace('</head>', () => `${alternates}</head>`);
 }
