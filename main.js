@@ -99,11 +99,11 @@ if ('IntersectionObserver' in window && 'animate' in Element.prototype) {
       if (reducedMotion.matches || document.hidden) continue;
       const requestedDelay = Number(entry.target.dataset.revealDelay) || 0;
       const animation = entry.target.animate([
-        { opacity: 0.2, transform: 'translateY(16px)' },
+        { opacity: 0, transform: 'translateY(8px)' },
         { opacity: 1, transform: 'translateY(0)' },
       ], {
-        duration: 560,
-        delay: Math.max(0, Math.min(requestedDelay, 240)),
+        duration: 420,
+        delay: Math.max(0, Math.min(requestedDelay, 120)),
         easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
         fill: 'backwards',
       });

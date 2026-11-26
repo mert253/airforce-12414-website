@@ -27,6 +27,9 @@ function icon(name = 'arrow') {
   const paths = {
     arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>',
     external: '<path d="M5 19 19 5M5 5h14v14"/>',
+    up: '<path d="M12 19V5m-6 6 6-6 6 6"/>',
+    previous: '<path d="M20 12H4m6-6-6 6 6 6"/>',
+    close: '<path d="m6 6 12 12M18 6 6 18"/>',
   };
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.arrow}</svg>`;
 }
@@ -93,22 +96,19 @@ function homeContent(lang = 'tr') {
       <div class="season-feature-title">
         <h2>${e(content.season?.year || '2027')}</h2>
         <p class="season-subtitle">${e(content.season?.status || t('Sezon durumu', 'Season status'))}</p>
-        <a class="text-link" href="/robotlar/">${t('Sezonun ayrıntıları', 'Season details')} ${icon()}</a>
-        <div class="season-frc-note"><p>${t('FIRST Robotics Competition: lise takımlarının her sezon yeni bir oyun için robot geliştirdiği uluslararası program.', 'FIRST Robotics Competition: an international program where high school teams build robots for a new game each season.')}</p><a class="text-link" href="/frc/">${t('FRC nasıl işliyor?', 'How does FRC work?')} ${icon()}</a></div>
-      </div>
-      <div class="season-feature-body">
-        <p>${e(content.season?.description || content.seasonStatus)}</p>
+        <p class="season-description">${e(content.season?.description || content.seasonStatus)}</p>
         ${updated ? `<dl class="home-season-summary"><div><dt>${t('Son güncelleme', 'Last updated')}</dt><dd><time datetime="${e(content.season.updatedAt)}">${e(updated)}</time></dd></div></dl>` : ''}
-        ${event ? `<article class="season-event">
-          <p class="eyebrow">${t('Yarışma takvimi', 'Competition schedule')}</p>
-          <h3>${e(event.title)}</h3>
-          <p class="season-date">${e(event.date)}</p>
-          <p class="season-location">${e(event.location)}</p>
-          <div class="event-countdown" data-countdown-start="${e(event.startDate)}" data-countdown-end="${e(event.endDate)}" aria-live="off" hidden></div>
-          ${eventPath(event) ? `<a class="text-link" href="${eventPath(event)}">${t('Etkinlik ayrıntıları', 'Event details')} ${icon()}</a>` : ''}
-          ${a(t('Resmî etkinlik bilgisi ', 'Official event information ') + icon('external'), event.url, 'class="text-link" target="_blank" rel="noopener noreferrer"')}
-        </article>` : ''}
+        <a class="text-link" href="/robotlar/">${t('Sezonun ayrıntıları', 'Season details')} ${icon()}</a>
       </div>
+      ${event ? `<article class="season-event">
+        <p class="eyebrow">${t('Yarışma takvimi', 'Competition schedule')}</p>
+        <h3>${e(event.title)}</h3>
+        <p class="season-date">${e(event.date)}</p>
+        <p class="season-location">${e(event.location)}</p>
+        <div class="event-countdown" data-countdown-start="${e(event.startDate)}" data-countdown-end="${e(event.endDate)}" aria-live="off" hidden></div>
+        <div class="entry-actions">${eventPath(event) ? `<a class="text-link" href="${eventPath(event)}">${t('Etkinlik ayrıntıları', 'Event details')} ${icon()}</a>` : ''}${a(t('Resmî etkinlik bilgisi ', 'Official event information ') + icon('external'), event.url, 'class="text-link" target="_blank" rel="noopener noreferrer"')}</div>
+      </article>` : ''}
+      <div class="season-frc-note"><p>${t('FIRST Robotics Competition: lise takımlarının her sezon yeni bir oyun için robot geliştirdiği uluslararası program.', 'FIRST Robotics Competition: an international program where high school teams build robots for a new game each season.')}</p><a class="text-link" href="/frc/">${t('FRC nasıl işliyor?', 'How does FRC work?')} ${icon()}</a></div>
     </div>
   </div></section>
   ${robot ? `<section class="section home-robot"><div class="container home-robot-grid" data-reveal>
@@ -117,7 +117,7 @@ function homeContent(lang = 'tr') {
   </div></section>` : ''}
   <section class="section home-partners" id="sponsorlar"><div class="container" data-reveal>
     <div class="partners-layout"><div><h2>${t('Sponsorlarımız<br>ve kurumlar', 'Sponsors and<br>organizations')}</h2><a class="text-link" href="/sponsorluk/">${t('Kurumları tanıyın', 'Meet the organizations')} ${icon()}</a></div><div class="partner-marks">${[...content.sponsors, content.schoolMark, content.frcOrganizer].map(sponsorMark).join('')}</div></div>
-    <div class="home-support"><div><h3>${t('AIR FORCE’a destek olun.', 'Support AIR FORCE.')}</h3><p>${t('Malzeme, üretim hizmeti veya yarışma desteği için bizimle iletişime geçin.', 'Get in touch to support the team with materials, manufacturing services or competition costs.')}</p></div><a class="button button-gold" href="/destek-ol/">${t('Sponsor olun', 'Sponsor the team')} ${icon()}</a></div>
+    <div class="home-support"><div><h3>${t('AIR FORCE’a destek olun', 'Support AIR FORCE')}</h3><p>${t('Malzeme, üretim hizmeti veya yarışma desteği için bizimle iletişime geçin.', 'Get in touch to support the team with materials, manufacturing services or competition costs.')}</p></div><a class="button button-gold" href="/destek-ol/">${t('Sponsor olun', 'Sponsor the team')} ${icon()}</a></div>
   </div></section>
   ${explore.length ? `<section class="section home-explore"><div class="container" data-reveal>
     <h2 class="section-heading">${t('Takım arşivi', 'Team archive')}</h2><div class="explore-grid">
@@ -232,7 +232,7 @@ function siteFooter(lang) {
           <span>Ankara</span>
           <small>Türkiye</small>
         </figcaption>
-        <div class="footer-skyline" data-reveal>
+        <div class="footer-skyline">
           <img src="/assets/anitkabir-kocatepe-620.webp" alt="${t('Anıtkabir ve Kocatepe Camii silüeti', 'Silhouette of Anıtkabir and Kocatepe Mosque')}" width="620" height="207" loading="lazy" decoding="async">
         </div>
       </div>
@@ -249,13 +249,13 @@ function siteFooter(lang) {
         </div>
         ${pageLinks(footerNavigation(t), lang)}
       </div>
-      <div class="footer-bottom"><span>© ${new Date().getFullYear()} AIR FORCE #12414</span><a href="#top">${t('Sayfanın başına dön', 'Back to top')} ↑</a></div>
+      <div class="footer-bottom"><span>© ${new Date().getFullYear()} AIR FORCE #12414</span><a href="#top">${t('Sayfanın başına dön', 'Back to top')} ${icon('up')}</a></div>
     </div>
   </footer>
-  <button type="button" class="back-to-top" data-back-to-top aria-label="${t('Sayfanın başına dön', 'Back to top')}" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
+  <button type="button" class="back-to-top" data-back-to-top aria-label="${t('Sayfanın başına dön', 'Back to top')}" hidden>${icon('up')}</button>
   <dialog class="lightbox" aria-label="${t('Galeri fotoğrafı', 'Gallery photo')}">
-    <div class="lightbox-toolbar"><span class="lightbox-position"></span><button type="button" class="lightbox-close" aria-label="${t('Fotoğrafı kapat', 'Close photo')}">${t('Kapat', 'Close')} ×</button></div>
-    <div class="lightbox-stage"><button type="button" class="lightbox-prev" aria-label="${t('Önceki fotoğraf', 'Previous photo')}">←</button><img class="lightbox-image" alt=""><button type="button" class="lightbox-next" aria-label="${t('Sonraki fotoğraf', 'Next photo')}">→</button></div>
+    <div class="lightbox-toolbar"><span class="lightbox-position"></span><button type="button" class="lightbox-close" aria-label="${t('Fotoğrafı kapat', 'Close photo')}">${t('Kapat', 'Close')} ${icon('close')}</button></div>
+    <div class="lightbox-stage"><button type="button" class="lightbox-prev" aria-label="${t('Önceki fotoğraf', 'Previous photo')}">${icon('previous')}</button><img class="lightbox-image" alt=""><button type="button" class="lightbox-next" aria-label="${t('Sonraki fotoğraf', 'Next photo')}">${icon()}</button></div>
     <p class="lightbox-caption"></p>
   </dialog>
   <script type="module" src="/main.js"></script>`;
@@ -380,7 +380,7 @@ export function renderPage(html,page) {
     .replace('<meta charset="UTF-8">', () => `<meta charset="UTF-8"><script>${loaderBootstrap}</script>`)
     .replace('<!-- site-header -->',()=>siteHeader(page))
     .replace('<link rel="stylesheet" href="/styles.css">', '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/content-extras.css"><link rel="stylesheet" href="/redesign.css"><link rel="stylesheet" href="/page-redesign.css"><link rel="stylesheet" href="/page-loader.css">')
-    .replace('<!-- site-content -->',()=>pageLinks(home ? page.body() : `<header class="page-heading${['support', 'sponsors', 'contact'].includes(page.kind) ? ' page-heading-compact' : ''}"><nav class="breadcrumb" aria-label="${t('Sayfa yolu', 'Breadcrumb')}"><a href="/">${t('Ana sayfa', 'Home')}</a><span aria-hidden="true">/</span>${page.parent ? `<a href="${e(page.parent.path)}">${e(page.parent.title)}</a><span aria-hidden="true">/</span>` : ''}<span>${e(page.title)}</span></nav><h1>${e(page.title)}</h1>${pageIntroduction(page)}</header>${page.body()}`, lang))
+    .replace('<!-- site-content -->',()=>pageLinks(home ? page.body() : `<header class="page-heading"><nav class="breadcrumb" aria-label="${t('Sayfa yolu', 'Breadcrumb')}"><a href="/">${t('Ana sayfa', 'Home')}</a><span aria-hidden="true">/</span>${page.parent ? `<a href="${e(page.parent.path)}">${e(page.parent.title)}</a><span aria-hidden="true">/</span>` : ''}<span>${e(page.title)}</span></nav><h1>${e(page.title)}</h1>${pageIntroduction(page)}</header>${page.body()}`, lang))
     .replace('<!-- site-footer -->',()=>siteFooter(lang))
     .replace('</head>', () => `${alternates}</head>`);
 }
