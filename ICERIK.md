@@ -169,9 +169,18 @@ Sponsor sunumunun her iki dildeki sürümünü okul onayından sonra yayımlayı
 - Dosya: `{ status: "published", label, url, en: { label } }`. Bağlantı Sponsor olun sayfasında e-posta kutusunun altında görünür. PDF'yi `public/assets/` altına koyun ve iki dilde ayrı dosya gerekiyorsa `en.url` alanını da yazın.
 - Seviye adı, tutar ve yardımlar okulun onayından sonra yazılır; ekip kendi başına yeni vaat eklemez.
 
-Takım fotoğrafı, galeri ve öğrenci bilgileri eklenmeden önce okulun yayın onayını ve geçerli kişisel veri işleme koşullarını doğrulayın. Okul, siteye özel KVKK bilgilendirmesini hazırlarken barındırma ve takım e-postasının nasıl işlendiğini de değerlendirmeli. Üçüncü taraf görsellerini doğrudan yüklemek yerine yayını onaylanmış dosyaları kendi sitenizden sunun.
+Takım fotoğrafı, galeri ve öğrenci bilgileri eklenmeden önce okulun yayın onayını ve geçerli kişisel veri işleme koşullarını doğrulayın. Site, okulun KVKK metinlerine `/kvkk/` sayfasıyla yönlendirir (bkz. [Kişisel verilerin korunması sayfası](#kişisel-verilerin-korunması-sayfası)). Okul siteye özel bir bilgilendirme hazırlarsa barındırma (Vercel) ve takım e-postasının nasıl işlendiği de kapsanmalı. Üçüncü taraf görsellerini doğrudan yüklemek yerine yayını onaylanmış dosyaları kendi sitenizden sunun.
 
 E-posta `airforce@istek.k12.tr`. `emailIsPlaceholder: false` gerçek adresi tıklanabilir yapar. Takıma katılım veya öğrenci/mentor başvuru formu yoktur.
+
+## Kişisel verilerin korunması sayfası
+
+- Türkçe sayfa `/kvkk/` ("Kişisel Verilerin Korunması"), okulun KVKK sayfasına (https://ankara.istek.k12.tr/tr/kvkk) yeni sekmede bağlanır.
+- İngilizce sayfa `/en/personal-data-protection/`, `public/documents/kvkk/` altındaki iki İngilizce PDF'ye bağlanır: `personal-data-processing-privacy-notice.pdf` ve `personal-data-retention-and-destruction-policy.pdf`. Sayfada bunların İngilizce çeviri olduğu, Türkçe metinlerin esas olduğu belirtilir (PDF'lerde de "The Turkish text is the original" yazar).
+- Altbilgide "KVKK" / "Personal Data Protection" bağlantısı bu sayfalara gider; iletişim sayfasındaki gizlilik bölümü `/kvkk/` adresine bağlanır.
+- Kodda: metin ve bağlantılar `content-pages.js` içindeki `privacy` çiziminde (`routes` listesi ve `englishMetadata`), altbilgi bağlantısı `site-pages.js` içindeki `siteFooter` işlevindedir.
+
+**Güncelleme.** Bir PDF'yi değiştirmek için `public/documents/kvkk/` altındaki dosyanın üzerine aynı adla yazın; ad değişecekse `privacy` çizimindeki yolu ve `site-integrity.test.js` içindeki testi de güncelleyin. Okul KVKK adresini değiştirirse aynı çizimde ve testte düzeltin. Bağlantılara asla `download` özniteliği eklemeyin; bütünlük testi bu ifadeyi yasaklar.
 
 ## Kontrol ve yayın
 

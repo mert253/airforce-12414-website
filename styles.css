@@ -271,12 +271,12 @@ p + p { margin-top: var(--space-4); }
 /* Skip layout and paint of sections far below the first screen until they approach the viewport. */
 /* Placeholder heights match the measured sections (desktop / tablet / phone) so the page does not jump. */
 .home-partners, .home-explore, .home-news { content-visibility: auto; contain-intrinsic-size: auto 450px; }
-.site-footer { content-visibility: auto; contain-intrinsic-size: auto 610px; }
+.site-footer { content-visibility: auto; contain-intrinsic-size: auto 680px; }
 @media (max-width: 980px) {
   .home-partners { contain-intrinsic-size: auto 540px; }
-  .site-footer { contain-intrinsic-size: auto 970px; }
+  .site-footer { contain-intrinsic-size: auto 1010px; }
 }
 @media (max-width: 720px) {
   .home-partners { contain-intrinsic-size: auto 650px; }
-  .site-footer { contain-intrinsic-size: auto 870px; }
+  .site-footer { contain-intrinsic-size: auto 1010px; }
 }

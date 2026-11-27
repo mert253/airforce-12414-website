@@ -591,7 +591,7 @@ function privacy({ t, lang }) {
     : [['İSTEK Ankara Okulları KVKK Belgeleri', 'https://ankara.istek.k12.tr/tr/kvkk']];
   return `<section class="section"><p class="lead">${t('AIR FORCE #12414 web sitesinde İSTEK Ankara Okulları’nın kişisel verilerin korunmasına ilişkin politika ve aydınlatma metinleri esas alınmaktadır. İlgili belgelere aşağıdaki bağlantıdan ulaşabilirsiniz.', 'The AIR FORCE #12414 website follows the personal data protection policy and privacy notices of İSTEK Ankara Schools. You can find the relevant documents below.')}</p>
     <div class="entry-actions">${documents.map(([label, url]) => anchor(label, url, 'text-link', true)).join('')}</div>
-    ${lang === 'en' ? '<p class="support-note">These documents are English translations of the Turkish documents published by İSTEK Ankara Schools.</p>' : ''}
+    ${lang === 'en' ? '<p class="support-note">These documents are English translations of the Turkish documents published by İSTEK Ankara Schools. The Turkish texts are the originals.</p>' : ''}
   </section>`;
 }
 function contact({ content, t }) {
