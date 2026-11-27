@@ -1,7 +1,8 @@
 {
-  "name": "AIR FORCE #12414 | Ankara İstech Robotics",
+  "name": "AIR FORCE #12414 | Ankara FRC Robotik Takımı",
   "short_name": "AIR FORCE 12414",
-  "description": "İSTEK Ankara Okulları FIRST Robotics Competition takımı AIR FORCE #12414.",
+  "description": "AIR FORCE #12414, İSTEK Ankara Okulları’nın FIRST Robotics Competition (FRC) robotik takımı.",
+  "lang": "tr",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b1728",

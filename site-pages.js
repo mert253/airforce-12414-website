@@ -125,11 +125,22 @@ function homeContent(lang = 'tr') {
   </div></section>` : ''}`;
 }
 
+// The home title and description carry the team's identity: name and number, city and what kind of team it is.
+function homeTitle(lang) {
+  return translator(lang)(`${teamName} | Ankara FRC Robotik Takımı`, `${teamName} | FRC Robotics Team in Ankara`);
+}
+function homeDescription(lang) {
+  const t = translator(lang);
+  const year = siteContent(lang).season?.year || 2027;
+  return t(`${teamName}, İSTEK Ankara Okulları’nın FIRST Robotics Competition (FRC) robotik takımı. Ankara’dan ${year} sezonuna hazırlanıyoruz.`,
+    `${teamName} is the FIRST Robotics Competition (FRC) robotics team of İSTEK Ankara Schools in Ankara, Türkiye, preparing for the ${year} season.`);
+}
+
 function buildPages(lang) {
   const t = translator(lang);
   const routes = lang === 'tr' ? contentRoutes : buildContentRoutes(content, lang);
   return [
-    {path:'/', title:t('Ana Sayfa', 'Home'), description:t('AIR FORCE #12414, İSTEK Ankara Okulları FIRST Robotics Competition takımı.', 'AIR FORCE #12414, the FIRST Robotics Competition team of İSTEK Ankara Schools.'), body:()=>homeContent(lang)},
+    {path:'/', title:t('Ana Sayfa', 'Home'), description:homeDescription(lang), body:()=>homeContent(lang)},
     ...routes.map(route => ({...route,body:()=>renderContent(route.kind,route.item,lang)})),
     {path:'/404.html',title:t('Sayfa bulunamadı', 'Page not found'),hidden:true,description:t('Bu adreste bir sayfa bulunamadı.', 'There is no page at this address.'),body:()=>`<div class="not-found"><p class="lead">${t('Aradığınız sayfa taşınmış ya da hiç var olmamış olabilir. Ana sayfadan devam edebilirsiniz.', 'The page you’re looking for may have moved or may never have existed. You can continue from the home page.')}</p><div class="entry-actions"><a class="button button-gold" href="/">${t('Ana sayfaya dön', 'Back to home')}</a><a class="text-link" href="/robotlar/">${t('Sezon sayfası', 'Season page')}${icon()}</a><a class="text-link" href="/iletisim/">${t('İletişim', 'Contact')}${icon()}</a></div></div>`},
   ].map(page => {
@@ -307,6 +318,7 @@ function buildStructuredData(page, lang) {
       alternateName: organization,
       email: localized.email,
       parentOrganization: { '@type': 'EducationalOrganization', name: localized.school.name, url: localized.school.url },
+      address: { '@type': 'PostalAddress', addressLocality: 'Ankara', addressCountry: 'TR' },
       sameAs: [localized.instagram],
       ...(publicUrl('/') ? { url: publicUrl('/'), logo: publicUrl(logoPath) } : {}),
     });
@@ -356,7 +368,7 @@ export function renderPage(html,page) {
   const t = translator(lang);
   const originalPath = page.originalPath || page.path;
   const home=originalPath==='/';
-  const title=home ? `${teamName} | ${organization}` : `${page.title} | ${teamName}`;
+  const title=home ? homeTitle(lang) : `${page.title} | ${teamName}`;
   const canonical=publicUrl(page.path);
   const ogImage=publicUrl('/assets/og-image.jpg');
   const noindex = page.hidden || page.noindex;
@@ -368,7 +380,7 @@ export function renderPage(html,page) {
   return html
     .replace('<html lang="tr">', `<html lang="${lang}">`)
     .replace('<!-- site-hero -->', () => pageLinks(renderHomeHero(lang), lang))
-    .replace('<!-- site-head -->',()=>`<meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0b1728"><meta name="description" content="${e(page.description)}"><title>${e(title)}</title><meta property="og:title" content="${e(title)}"><meta property="og:description" content="${e(page.description)}"><meta property="og:type" content="website"><meta property="og:site_name" content="${teamName}"><meta property="og:locale" content="${t('tr_TR', 'en_GB')}"><meta property="og:locale:alternate" content="${t('en_GB', 'tr_TR')}"><meta name="twitter:card" content="${ogImage ? 'summary_large_image' : 'summary'}">${noindex ? '<meta name="robots" content="noindex, follow">':''}${canonical&&!noindex ? `<link rel="canonical" href="${e(canonical)}"><meta property="og:url" content="${e(canonical)}">`:''}${ogImage ? `<meta property="og:image" content="${e(ogImage)}">`:''}${structuredData}<link rel="icon" href="/favicon.ico?v=2" sizes="48x48"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2"><link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2"><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2"><link rel="manifest" href="/manifest.webmanifest?v=2"><link rel="preload" href="/assets/fonts/e4af272ccee01ff0-s.p.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/styles.css">`)
+    .replace('<!-- site-head -->',()=>`<meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0b1728"><meta name="description" content="${e(page.description)}"><title>${e(title)}</title><meta property="og:title" content="${e(title)}"><meta property="og:description" content="${e(page.description)}"><meta property="og:type" content="website"><meta property="og:site_name" content="${teamName}"><meta property="og:locale" content="${t('tr_TR', 'en_GB')}"><meta property="og:locale:alternate" content="${t('en_GB', 'tr_TR')}"><meta name="twitter:card" content="${ogImage ? 'summary_large_image' : 'summary'}"><meta name="twitter:title" content="${e(title)}"><meta name="twitter:description" content="${e(page.description)}">${noindex ? '<meta name="robots" content="noindex, follow">':''}${canonical&&!noindex ? `<link rel="canonical" href="${e(canonical)}"><meta property="og:url" content="${e(canonical)}">`:''}${ogImage ? `<meta property="og:image" content="${e(ogImage)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="${e(t('AIR FORCE #12414: lacivert zeminde Pegasus figürü', 'AIR FORCE #12414: the Pegasus on a navy background'))}"><meta name="twitter:image" content="${e(ogImage)}">`:''}${structuredData}<link rel="icon" href="/favicon.ico?v=2" sizes="48x48"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2"><link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2"><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2"><link rel="manifest" href="/manifest.webmanifest?v=2"><link rel="preload" href="/assets/fonts/e4af272ccee01ff0-s.p.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/styles.css">`)
     .replace('<meta charset="UTF-8">', () => `<meta charset="UTF-8"><script>${loaderBootstrap}</script>`)
     .replace('<!-- site-header -->',()=>siteHeader(page))
     .replace('<link rel="stylesheet" href="/styles.css">', '<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/content-extras.css"><link rel="stylesheet" href="/redesign.css"><link rel="stylesheet" href="/page-redesign.css"><link rel="stylesheet" href="/page-loader.css">')

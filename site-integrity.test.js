@@ -387,3 +387,49 @@ test('the 404 page is written in both languages and links onward', () => {
   assert.match(en, /href="\/en\/robots\/"/);
   assert.doesNotMatch(en, /Ana sayfaya dön|Sayfa bulunamadı/);
 });
+
+test('home title and description name the team, the city and what kind of team it is', () => {
+  const field = (html, pattern) => html.match(pattern)[1];
+  for (const [path, html] of [['/', rendered.get('/')], ['/en/', rendered.get('/en/')]]) {
+    const title = field(html, /<title>(.*?)<\/title>/), description = field(html, /name="description" content="(.*?)"/);
+    for (const text of [title, description]) assert.match(text, /AIR FORCE #12414/, path);
+    assert.match(title, /Ankara/, path);
+    assert.match(title, /FRC/, path);
+    assert.match(description, /Ankara/, path);
+    assert.match(description, /FIRST Robotics Competition \(FRC\)/, path);
+    assert.ok(title.length <= 60, `${path} title is ${title.length} characters`);
+    assert.ok(description.length <= 160, `${path} description is ${description.length} characters`);
+  }
+});
+
+test('every indexable page has absolute canonical, reciprocal hreflang, share cards and parseable JSON-LD', () => {
+  const origin = 'https://team12414.com';
+  for (const page of pages.filter(item => !item.hidden)) {
+    const html = rendered.get(page.path);
+    const indexable = !/name="robots" content="noindex/.test(html);
+    for (const property of ['og:title', 'og:description']) assert.match(html, new RegExp(`property="${property}"`), page.path);
+    for (const name of ['twitter:card', 'twitter:title', 'twitter:description', 'twitter:image']) assert.match(html, new RegExp(`name="${name}"`), `${page.path} ${name}`);
+    assert.match(html, /property="og:image:alt" content="[^"]+"/, page.path);
+    for (const [, json] of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) JSON.parse(json);
+    if (!indexable) continue;
+    assert.ok(html.includes(`<link rel="canonical" href="${origin}${page.path}">`), page.path);
+    const alternates = Object.fromEntries([...html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)"/g)].map(match => [match[1], match[2]]));
+    const sibling = pages.find(item => item.originalPath === page.originalPath && item.lang !== page.lang);
+    assert.equal(alternates[page.lang], origin + page.path, page.path);
+    assert.equal(alternates[sibling.lang], origin + sibling.path, page.path);
+    assert.equal(alternates['x-default'], origin + pages.find(item => item.originalPath === page.originalPath && item.lang === 'tr').path, page.path);
+  }
+});
+
+test('Event schema dates match the dates shown on the page', () => {
+  for (const [path, lang] of [['/etkinlikler/ankara-regional/', 'tr'], ['/en/events/ankara-regional/', 'en']]) {
+    const html = rendered.get(path);
+    const graph = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'];
+    const event = graph.find(item => item['@type'] === 'Event');
+    const start = new Date(`${event.startDate}T00:00:00Z`), end = new Date(`${event.endDate}T00:00:00Z`);
+    const month = new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'tr-TR', { month: 'long', timeZone: 'UTC' }).format(start);
+    const shown = html.match(/class="af-event-date">([^<]+)</)[1];
+    assert.equal(shown, `${start.getUTCDate()}–${end.getUTCDate()} ${month} ${start.getUTCFullYear()}`, path);
+    assert.equal(event.location.name, html.match(/<dt>(?:Konum|Location)<\/dt><dd>([^<]+)</)[1], path);
+  }
+});

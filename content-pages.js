@@ -142,6 +142,12 @@ const englishMetadata = {
   support: ['Sponsor the team', 'AIR FORCE 12414', 'Support AIR FORCE with materials, fabrication or competition expenses, or contact us about sponsorship.'],
   contact: ['Contact', 'Ankara, Türkiye', 'Contact AIR FORCE #12414 at airforce@istek.k12.tr or on Instagram at @airforce12414.'],
 };
+// Summary, date and place joined by " · ". The place is the first part dropped when the line would be cut off in search results.
+function eventDescription(item) {
+  const parts = [item.summary, item.date, item.location].filter(Boolean).map(part => String(part).trim().replace(/[.\s]+$/, ''));
+  while (parts.length > 2 && parts.join(' · ').length > 155) parts.pop();
+  return parts.join(' · ') || item.title;
+}
 export function buildContentRoutes(data = content, lang = 'tr') {
   const t = translator(lang);
   const emptyPages = {
@@ -170,7 +176,7 @@ export function buildContentRoutes(data = content, lang = 'tr') {
     for (const entry of entries) {
       const path = `${prefix}${entry.slug}/`;
       const item = lang === 'en' ? localizeRecord(entry, lang) : entry;
-      const record = { kind, path, file: `${path.slice(1)}index.html`, title: item.title || item.name, kicker: kind === 'article' ? journalCategory(item.category, lang) : kind === 'event' ? t('Etkinlik', 'Event') : item.year || item.category || 'AIR FORCE 12414', description: kind === 'event' ? [item.summary, item.date, item.location].filter(Boolean).map(part => String(part).trim().replace(/[.\s]+$/, '')).join(' · ') || item.title : item.description || item.summary || item.title || item.name, noindex: false, item, parent: { title: parent[0], path: parent[1] } };
+      const record = { kind, path, file: `${path.slice(1)}index.html`, title: item.title || item.name, kicker: kind === 'article' ? journalCategory(item.category, lang) : kind === 'event' ? t('Etkinlik', 'Event') : item.year || item.category || 'AIR FORCE 12414', description: kind === 'event' ? eventDescription(item) : item.description || item.summary || item.title || item.name, noindex: false, item, parent: { title: parent[0], path: parent[1] } };
       const existing = result.findIndex(route => route.path === path);
       if (existing >= 0) result[existing] = record;
       else result.push(record);

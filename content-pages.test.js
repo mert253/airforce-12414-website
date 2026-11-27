@@ -556,7 +556,8 @@ test('event meta descriptions join their parts without a stray full stop', () =>
   for (const lang of ['tr', 'en']) {
     const route = buildContentRoutes(siteConfig, lang).find(item => item.kind === 'event');
     assert.doesNotMatch(route.description, /\.\s*·|·\s*·/, lang);
-    assert.equal(route.description.split(' · ').length, 3, lang);
+    assert.ok(route.description.split(' · ').length >= 2, lang);
+    assert.ok(route.description.length <= 160, `${lang}: ${route.description.length}`);
   }
 });
 
