@@ -157,3 +157,18 @@ Dal temeli: `fc6bc1b` (son yeniden tasarım) `feat/polish-plan` içinde zaten va
 2. Yayındaki site eski yapılandırmayla çalışıyor (`no-referrer`, önbellek başlıkları yok) ta ki yeni sürüm deploy edilene kadar.
 3. Gerçek takım fotoğrafı eklendikten sonra mobil Lighthouse ölçümü bekliyor.
 4. Alan adının DNS ve Vercel bağlantısı.
+
+
+## Deployment verification — 27 November 2026
+
+This section supersedes the earlier unverified deployment notes.
+
+- Published commit: 9d675ac7ac3b13238c2f0165a0967e26fd1e3408 on feat/polish-plan.
+- Fixed hosting rule order: security/cache headers and canonical redirects run before the filesystem and language-specific 404 fallbacks.
+- npm test: 102 passed. npm run build: passed.
+- Preview: https://air-force-12414-v2-do6vi8qpp-merts-projects-b59bbdb1.vercel.app
+- Production: https://air-force-12414-v2.vercel.app
+- npm run check:deploy against production: all six checks passed (TR 404, EN 404, existing EN page, trailing slash redirect, security headers, immutable font cache).
+- Hashed JavaScript cache also verified as immutable through authenticated preview requests.
+- Preview check:deploy is blocked by deployment authentication for anonymous requests. Equivalent responses were inspected with authenticated requests; production check:deploy passes directly.
+- Remaining content/setup tasks: custom-domain DNS connection and mobile Lighthouse after the real team photo is supplied.
