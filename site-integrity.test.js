@@ -327,3 +327,40 @@ test('the language switch names its visible text so voice control and screen rea
     assert.ok(link[1].startsWith(link[2]), `${path}: "${link[1]}" should start with "${link[2]}"`);
   }
 });
+
+const mainOf = html => html.match(/<main[\s\S]*?<\/main>/)[0].replace(/<nav class="breadcrumb"[\s\S]*?<\/nav>/, '');
+const mainLinks = html => [...mainOf(html).matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map(([, attributes, inner]) => ({
+  attributes,
+  href: attributes.match(/href="([^"]*)"/)?.[1] || '',
+  label: inner.replace(/<[^>]+>/g, '').trim(),
+  icon: inner.match(/data-icon="([a-z]+)"/)?.[1] || '',
+  logo: inner.includes('<img'),
+}));
+
+test('links to the same page use the same label in Turkish', () => {
+  const allowed = {
+    '/takim/': ['Takımı tanıyın'],
+    '/frc/': ['FIRST ve FRC hakkında'],
+    '/etkinlikler/': ['Etkinlik takvimi', 'Tüm etkinlikler'],
+    '/destek-ol/': ['Sponsor olun', 'Destek seçenekleri'],
+    '/robotlar/': ['Sezon sayfası', 'Sezon sayfasına dön', 'Tüm robotlara dön', 'AIR FORCE robotlarını keşfedin'],
+  };
+  for (const [path, html] of rendered) {
+    if (path.startsWith('/en/')) continue;
+    for (const link of mainLinks(html)) if (allowed[link.href]) assert.ok(allowed[link.href].includes(link.label), `${path}: "${link.label}" -> ${link.href}`);
+  }
+});
+
+test('link icons carry meaning: external, email and back links have one, internal buttons do not', () => {
+  for (const [path, html] of rendered) {
+    // Logo links are recognisable by their image, so only text links need an external marker.
+    for (const link of mainLinks(html).filter(item => !item.logo)) {
+      if (link.attributes.includes('target="_blank"')) {
+        assert.equal(link.icon, 'external', `${path}: ${link.label}`);
+        assert.match(link.attributes, /rel="noopener noreferrer"/, `${path}: ${link.label}`);
+      }
+      if (link.href.startsWith('mailto:')) assert.equal(link.icon, 'mail', `${path}: ${link.label}`);
+      if (/class="button\b/.test(link.attributes) && link.href.startsWith('/') && !/^(Tüm|Back|All)/.test(link.label)) assert.equal(link.icon, '', `${path}: ${link.label}`);
+    }
+  }
+});

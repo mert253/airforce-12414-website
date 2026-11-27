@@ -10,7 +10,7 @@ export function renderHomeHero(lang) {
         <p class="hero-identity">Ankara İstech Robotics Force</p>
         <p class="hero-description">${t('İSTEK Ankara Okulları’nın FIRST Robotics Competition takımı.', 'The FIRST Robotics Competition team of İSTEK Ankara Schools.')}</p>
         <div class="hero-actions">
-          <a class="button button-gold" href="/takim/">${t('Takımı tanıyın', 'Meet the team')} <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></a>
+          <a class="button button-gold" href="/takim/">${t('Takımı tanıyın', 'Meet the team')}</a>
           <a class="button button-outline" href="/destek-ol/">${t('Sponsor olun', 'Sponsor the team')}</a>
         </div>
       </div>
