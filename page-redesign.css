@@ -112,7 +112,7 @@
   background: #e8ecf1;
   transition: border-color var(--dur-fast) var(--ease);
 }
-.af-robot-media:hover { border-color: var(--gold-ink); }
+.af-robot-media:hover { border-color: var(--control-line); }
 .af-robot-media > img { width: 100%; height: 100%; object-fit: contain; }
 .af-robot-monogram { color: var(--navy); font-family: 'Barlow Condensed', Inter, sans-serif; font-size: clamp(56px, 8vw, 96px); font-weight: 700; font-variant-numeric: tabular-nums; }
 .af-robot-copy h3 { margin-block: var(--space-2) var(--space-3); font-size: clamp(24px, 2.6vw, 32px); }

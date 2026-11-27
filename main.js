@@ -88,49 +88,6 @@ mobile.addEventListener('change', closeMenu);
 document.documentElement.classList.add('menu-ready');
 menuToggle.hidden = false;
 
-// Content stays visible without JavaScript; each entrance animation runs once.
-if ('IntersectionObserver' in window && 'animate' in Element.prototype) {
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const activeAnimations = new Set();
-  const reveal = new IntersectionObserver(entries => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      reveal.unobserve(entry.target);
-      if (reducedMotion.matches || document.hidden) continue;
-      const requestedDelay = Number(entry.target.dataset.revealDelay) || 0;
-      const animation = entry.target.animate([
-        { opacity: 0, transform: 'translateY(8px)' },
-        { opacity: 1, transform: 'translateY(0)' },
-      ], {
-        duration: 420,
-        delay: Math.max(0, Math.min(requestedDelay, 120)),
-        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-        fill: 'backwards',
-      });
-      activeAnimations.add(animation);
-      animation.finished.then(
-        () => activeAnimations.delete(animation),
-        () => activeAnimations.delete(animation),
-      );
-    }
-  }, { threshold: 0.08, rootMargin: '0px 0px -24px 0px' });
-  function observeSections() {
-    document.querySelectorAll('[data-reveal]').forEach(section => {
-      if (!section.parentElement.closest('[data-reveal]')) reveal.observe(section);
-    });
-  }
-  if (document.documentElement.dataset.loader === 'intro') {
-    document.addEventListener('airforce:page-ready', observeSections, { once: true });
-  } else observeSections();
-  function finishReveals() {
-    for (const animation of activeAnimations) animation.cancel();
-    activeAnimations.clear();
-  }
-  reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) finishReveals(); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) finishReveals(); });
-  window.addEventListener('pagehide', finishReveals);
-}
-
 // Category and Turkish-aware text filters stay independent for each collection.
 document.querySelectorAll('[data-collection]').forEach(collection => {
   const buttons = [...collection.querySelectorAll('[data-filter]')];

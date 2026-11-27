@@ -15,7 +15,8 @@ function resetTilt() {
 function updateTilt() {
   animationFrame = 0;
   if (!tilt || reducedMotion.matches || !finePointer.matches || document.hidden) return;
-  tilt.style.transform = `perspective(1100px) translate3d(${pointerX * 6}px, ${pointerY * 4}px, 0) rotateX(${-pointerY * 7}deg) rotateY(${pointerX * 10}deg)`;
+  // A light lean, a few degrees at the edges; reduced-motion and touch users get none.
+  tilt.style.transform = `perspective(1400px) translate3d(${pointerX * 3}px, ${pointerY * 2}px, 0) rotateX(${-pointerY * 3}deg) rotateY(${pointerX * 4}deg)`;
 }
 
 art?.addEventListener('pointermove', event => {

@@ -66,7 +66,7 @@
 .af-season-reference > .text-link,
 .af-event-panel > .button { margin-top: var(--space-6); }
 :is(.season-event, .af-event-panel, .af-season-reference) .text-link { color: var(--silver); }
-:is(.season-event, .af-event-panel, .af-season-reference) .text-link:hover { color: var(--gold); }
+:is(.season-event, .af-event-panel, .af-season-reference) .text-link:hover { color: #fff; }
 
 /* Live event countdown: one readout style on every navy panel. */
 .event-countdown { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-6); }
@@ -136,7 +136,7 @@
 .contact-card a { overflow-wrap: anywhere; }
 .contact-card .contact-value { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; margin-top: var(--space-2); color: var(--ink); font-size: 20px; font-weight: 600; transition: color var(--dur-fast) var(--ease); }
 .contact-card .contact-value svg { width: 16px; height: 16px; }
-.contact-card .contact-value:hover { color: var(--gold-ink); }
+.contact-card .contact-value:hover { text-decoration: underline; text-underline-offset: 4px; }
 .contact-email-row .contact-value { margin-top: 0; }
 .contact-card > .contact-email-row { margin-top: var(--space-2); }
 #gizlilik p { max-width: 72ch; }
@@ -149,14 +149,14 @@
 .accordion > summary::-webkit-details-marker { display: none; }
 .accordion > summary::after { content: '+'; flex-shrink: 0; width: 20px; color: var(--muted); font-size: 22px; font-weight: 400; line-height: 1; text-align: center; }
 .accordion[open] > summary::after { content: '−'; }
-.accordion > summary:hover { color: var(--gold-ink); }
+.accordion > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
 .accordion > div { max-width: 72ch; padding-bottom: var(--space-5); }
 .accordion > div p { font-size: 15px; line-height: 1.7; }
 
 /* Galleries and lightbox */
 .gallery-nav { display: flex; flex-wrap: wrap; gap: 0 var(--space-6); padding-top: var(--space-3); border-bottom: 1px solid var(--line); }
 .gallery-nav a { display: inline-flex; align-items: center; min-height: 48px; margin-bottom: -1px; border-bottom: 2px solid transparent; font-size: 15px; font-weight: 500; transition: color var(--dur-fast) var(--ease); }
-.gallery-nav a:hover { color: var(--gold-ink); }
+.gallery-nav a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .gallery-nav a[aria-current='page'] { border-bottom-color: var(--gold-ink); color: var(--ink); font-weight: 600; }
 .gallery-nav + .section { padding-top: var(--space-10); }
 .project-album + .project-album, .photo-album + .photo-album { border-top: 1px solid var(--line); }

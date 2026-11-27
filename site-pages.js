@@ -89,8 +89,8 @@ function homeContent(lang = 'tr') {
       <a class="text-link" href="/takim/">${t('Takımı tanıyın', 'Meet the team')}${icon()}</a>
     </div>${photo || teamPhotoPlaceholder(t)}</div></section>
   <section class="section home-season-feature" id="sezon"><div class="container">
-    <div class="editorial-label"><span>${robot ? t('Robotlar ve sezon', 'Robots and season') : t('Sezon', 'Season')}</span></div>
-    <div class="season-feature-grid" data-reveal>
+    ${robot ? `<div class="editorial-label"><span>${t('Robotlar ve sezon', 'Robots and season')}</span></div>` : ''}
+    <div class="season-feature-grid">
       <div class="season-feature-title">
         <h2>${e(content.season?.year || '2027')}</h2>
         <p class="season-subtitle">${e(content.season?.status || t('Sezon durumu', 'Season status'))}</p>
@@ -109,15 +109,15 @@ function homeContent(lang = 'tr') {
       <div class="season-frc-note"><p>${t('FIRST Robotics Competition: lise takımlarının her sezon yeni bir oyun için robot geliştirdiği uluslararası program.', 'FIRST Robotics Competition: an international program where high school teams build robots for a new game each season.')}</p><a class="text-link" href="/frc/">${t('FIRST ve FRC hakkında', 'About FIRST and FRC')}${icon()}</a></div>
     </div>
   </div></section>
-  ${robot ? `<section class="section home-robot"><div class="container home-robot-grid" data-reveal>
+  ${robot ? `<section class="section home-robot"><div class="container home-robot-grid">
     <div class="home-robot-copy"><h2>${e(robot.name || robot.title)}</h2>${robot.description ? `<p>${e(robot.description)}</p>` : ''}<a class="text-link" href="/robotlar/${e(robot.slug)}/">${t('Robotun teknik ayrıntıları', 'Robot specifications')}${icon()}</a></div>
     ${robotPhoto ? `<div class="robot-stage">${robotPhoto}</div>` : ''}
   </div></section>` : ''}
-  <section class="section home-partners" id="sponsorlar"><div class="container" data-reveal>
+  <section class="section home-partners" id="sponsorlar"><div class="container">
     <div class="partners-layout"><div><h2>${hasSponsors ? t('Sponsorlarımız<br>ve kurumlar', 'Sponsors and<br>organizations') : t('Okulumuz ve<br>FRC organizatörü', 'Our school and<br>FRC organizer')}</h2><a class="text-link" href="/sponsorluk/">${hasSponsors ? t('Sponsorlarımız', 'Our sponsors') : t('Kurumları tanıyın', 'Meet the organizations')}${icon()}</a></div><div class="partner-marks">${[...content.sponsors, content.schoolMark, content.frcOrganizer].map(sponsorMark).join('')}</div></div>
     <div class="home-support"><div><h3>${t('AIR FORCE’a destek olun', 'Support AIR FORCE')}</h3><p>${t('Malzeme, üretim hizmeti veya yarışma desteği için bizimle iletişime geçin.', 'Get in touch to support the team with materials, manufacturing services or competition costs.')}</p></div><a class="button button-gold" href="/destek-ol/">${t('Sponsor olun', 'Sponsor the team')}</a></div>
   </div></section>
-  ${explore.length ? `<section class="section home-explore"><div class="container" data-reveal>
+  ${explore.length ? `<section class="section home-explore"><div class="container">
     <h2 class="section-heading">${t('Takım arşivi', 'Team archive')}</h2><div class="explore-grid">
       ${explore.map(([label, href]) => `<a class="explore-card" href="${href}"><h3>${label}</h3>${icon()}</a>`).join('')}
     </div>
