@@ -79,7 +79,7 @@
 - Font: hero başlığındaki Barlow Condensed 900 latin alt kümesi preload edilir (ölçerek). Inter latin-ext dosyası Türkçe için (İ, Ş, Ğ) indiriliyor; Türkçe alt kümesi `fonttools` ile üretilebiliyorsa uygulanır.
 - Logo: `logo-440.webp` en çok 152 px gösteriliyor; 2x için küçük sürüm üretilir ve kullanılır.
 - Başlangıç JS: `main.js` modül boyutu ve ağır başlangıç işleri incelenir; `hero-motion.js` zaten ayrı modül.
-- Kullanılmayan `public` dosyaları: her aday için tüm repoda referans araması yapılır, sonra silinir (`BarlowCondensed-ExtraBoldItalic.ttf`, `reference-fonts.css`, yinelenen `Inter-OFL.txt` vb.).
+- Kullanılmayan `public` dosyaları: her aday için tüm repoda referans araması yapılır, sonra silinir (`BarlowCondensed-ExtraBoldItalic.ttf`, `reference-fonts.css`, `favicon-48.png`, `pegasus-192.webp`). `OFL.txt` (Barlow) ve `Inter-OFL.txt` (Inter) farklı lisanslardır, ikisi de kalır.
 - Gerçek fotoğraf henüz yok: performansı **ölçülemez**. Yalnızca yer tutuculu hâl ölçülür; gerçek fotoğraf için bütçe ve yükleme kuralı belgelenir.
 
 ## P6 — Altyapı
@@ -119,3 +119,27 @@
 ## Değişmeyenler
 
 Marka (lacivert/altın/gümüş, Barlow Condensed + Inter, Pegasus açılışı), form yok, "katıl" sayfası yok, sponsor seviyesi/fiyat/PDF yayımlanmaz (yalnızca eklenebilir alan), sponsor logosu yalnızca onaylı sponsorlar için, e-posta düz metin, takım fotoğrafı yeri ve iki galeri bağlantısı.
+
+## Sonuçlar ve ölçümler (uygulama sonrası)
+
+Dal temeli: `fc6bc1b` (son yeniden tasarım) `feat/polish-plan` içinde zaten vardı; ek birleştirme gerekmedi. Her P ayrı commit: P1 `3b81ae5`, P2 `2f8b073`, P3 `e5d60d9`, P4 `0521bc7`, P5 `857dd90`, P6 `3c316b9`, P7 `d6eff26`, P8 `299c409`.
+
+**Performans (Lighthouse 12, yerel `vite preview`, 3 çalıştırmanın ortancası; laboratuvar ölçümü)**
+
+| Sayfa | Önce | Sonra |
+| --- | --- | --- |
+| Ana sayfa, mobil (TR) | 94, LCP 2,96 sn, 332 KiB | 98, LCP 2,19 sn, 220 KiB |
+| Ana sayfa, mobil (EN) | 93, LCP 2,95 sn | 98, LCP 2,34 sn |
+| Ana sayfa, masaüstü | 100, LCP 0,63 sn | 100, LCP 0,48 sn |
+
+Önceki mobil LCP öğesi yer tutucu PNG'siydi; şimdi Pegasus açılış görseli. CLS her yerde 0. Etkisi en büyük üç değişiklik: yer tutucunun CSS'e taşınması, Türkçe Inter alt kümesi (85 KB yerine 3 KB) ve logo boyutları.
+
+**Gerçek fotoğraf ölçülemedi:** fotoğraf henüz yok. `teamPhotoSources` yolu yalnızca yapay görsellerle (geçici, commit edilmedi) doğrulandı: mobilde 800 px kopya seçildi ve fotoğraf LCP öğesi oldu. Bu sayı gerçek fotoğrafın başarımını göstermez; fotoğraf eklenince mobilde Lighthouse ile yeniden ölçün.
+
+**Denenip bırakılanlar:** Pegasus görselini `preload` etmek ve Barlow yazı tipini öne çekmek ölçülebilir fark yaratmadı (LCP 2,34 sn'de kaldı), eklenmedi.
+
+**Doğrulanamayanlar**
+- `/en/` için İngilizce 404 (`routes` ile `handle: filesystem` + `status: 404`) Vercel belgelerinde birebir örneklenmiyor ve buradan dağıtılamadı. Önizleme dağıtımında `npm run check:deploy -- <adres>` çalıştırın; başarısız olursa yapılandırma dağıtımı reddedebilir ya da `/en/` 404'ü Türkçe sayfaya düşer.
+- `team12414.com` ve `.org` alan adları bu makineden çözümlenmedi (NXDOMAIN); `air-force-12414-v2.vercel.app` 200 döndü. README iki adresi de yazar.
+
+**Sayfa denetimi:** 21 sayfa (TR ve EN) × 375, 820, 1440 px: yatay taşma yok, dokunma hedefleri ≥44 px, konsol hatası yok (yalnızca bilerek 404 dönen adresler), görünür düğmelerin köşesi 4 px.
