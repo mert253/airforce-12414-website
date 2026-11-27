@@ -464,7 +464,18 @@ test('hosting config sends the agreed referrer policy, canonical slashes, long-l
   assert.match(cacheFor('/assets/fonts/(.*)'), /immutable/);
   assert.match(cacheFor('/assets/(.*)\\.(js|css)'), /immutable/);
   // Unknown /en/ addresses fall through the filesystem to the English 404 page, with a 404 status.
-  assert.deepEqual(config.routes, [{ handle: 'filesystem' }, { src: '/en/(.*)', status: 404, dest: '/en/404.html' }]);
+  const filesystemIndex = config.routes.findIndex(route => route.handle === 'filesystem');
+  assert.ok(filesystemIndex > 0);
+  assert.deepEqual(config.routes.slice(filesystemIndex), [
+    { handle: 'filesystem' },
+    { src: '/en/(.*)', status: 404, dest: '/en/404.html' },
+    { src: '/(.*)', status: 404, dest: '/404.html' },
+  ]);
+  const headerRoutes = config.routes.slice(0, filesystemIndex).filter(route => route.continue);
+  for (const rule of config.headers) {
+    assert.deepEqual(headerRoutes.find(route => route.src === rule.source)?.headers,
+      Object.fromEntries(rule.headers.map(header => [header.key, header.value])));
+  }
   assert.ok(pages.some(page => page.path === '/en/404.html' && page.hidden), 'the English 404 page is built');
   for (const page of pages.filter(item => item.path.endsWith('/') && item.path !== '/')) assert.ok(page.file.endsWith('/index.html'), page.path);
 });
