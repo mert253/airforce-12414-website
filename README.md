@@ -15,4 +15,6 @@ npm run dev
 
 `npm test` site testlerini çalıştırır. `npm run build` statik siteyi `dist/` klasörüne üretir.
 
+Yayına aldıktan sonra (önizleme veya canlı adres) sunucu davranışını denetlemek için: `npm run check:deploy -- https://team12414.com`. Bilinmeyen `/en/` adreslerinin İngilizce 404 sayfasını 404 koduyla sunması, eğik çizgi yönlendirmesi, güvenlik başlıkları ve yazı tipi önbelleği kontrol edilir. Yerelde `vite preview` yalnızca ilk üç denetimi geçer; başlık denetimleri Vercel'e özgüdür.
+
 Takım içeriği `site-config.js` üzerinden düzenlenir. [İçerik kılavuzu](ICERIK.md) ve [görsel kaynakları](ASSET-SOURCES.md) depoda yer alır.

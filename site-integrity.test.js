@@ -453,3 +453,18 @@ test('team photo sources become a srcset with a matching sizes hint, and bad ent
     assert.doesNotMatch(renderPage(readFileSync(resolve(root, 'index.html'), 'utf8'), pages[0]).match(/<img[^>]*team-photo-image[^>]*>/)[0], /srcset/);
   } finally { siteConfig.teamPhoto = previous.photo; siteConfig.teamPhotoSources = previous.sources; }
 });
+
+test('hosting config sends the agreed referrer policy, canonical slashes, long-lived font caching and an English 404', () => {
+  const config = JSON.parse(readFileSync(resolve(root, 'vercel.json'), 'utf8'));
+  const allHeaders = config.headers.find(rule => rule.source === '/(.*)').headers;
+  assert.equal(allHeaders.find(header => header.key === 'Referrer-Policy').value, 'strict-origin-when-cross-origin');
+  for (const key of ['Content-Security-Policy', 'X-Frame-Options', 'X-Content-Type-Options', 'Strict-Transport-Security', 'Permissions-Policy']) assert.ok(allHeaders.some(header => header.key === key), key);
+  assert.equal(config.trailingSlash, true);
+  const cacheFor = source => config.headers.find(rule => rule.source === source)?.headers.find(header => header.key === 'Cache-Control')?.value;
+  assert.match(cacheFor('/assets/fonts/(.*)'), /immutable/);
+  assert.match(cacheFor('/assets/(.*)\\.(js|css)'), /immutable/);
+  // Unknown /en/ addresses fall through the filesystem to the English 404 page, with a 404 status.
+  assert.deepEqual(config.routes, [{ handle: 'filesystem' }, { src: '/en/(.*)', status: 404, dest: '/en/404.html' }]);
+  assert.ok(pages.some(page => page.path === '/en/404.html' && page.hidden), 'the English 404 page is built');
+  for (const page of pages.filter(item => item.path.endsWith('/') && item.path !== '/')) assert.ok(page.file.endsWith('/index.html'), page.path);
+});
