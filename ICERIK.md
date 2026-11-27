@@ -156,6 +156,12 @@ Sponsor kaydı `{ name, logo, url, role, width, height }` biçimindedir. `sponso
 
 Sponsor sunumunun her iki dildeki sürümünü okul onayından sonra yayımlayın. Önceki sunum ve üçüncü taraf logo dosyaları yerel `.publication-review/` klasöründe durur. `public/` içindeki dosyalar, bir sayfaya bağlanmasalar bile yayımlanır. Taslakları ve özel dosyaları bu klasöre koymayın.
 
+**Sponsorluk seviyeleri ve dosyası** hazır olduğunda `sponsorshipTiers` ve `sponsorshipPdf` alanlarını doldurun; ikisi de boşken sayfada hiçbir şey görünmez. Örnekler `contentTemplates.sponsorshipTier` ve `contentTemplates.sponsorshipPdf` içindedir.
+
+- Seviye: `{ status: "published", name, amount, description, benefits: [], en: { ... } }`. `amount` isteğe bağlıdır. Seviyeler Sponsor olun sayfasında "Sponsorluk seviyeleri" başlığıyla, destek alanlarının altında çıkar.
+- Dosya: `{ status: "published", label, url, en: { label } }`. Bağlantı Sponsor olun sayfasında e-posta kutusunun altında görünür. PDF'yi `public/assets/` altına koyun ve iki dilde ayrı dosya gerekiyorsa `en.url` alanını da yazın.
+- Seviye adı, tutar ve yardımlar okulun onayından sonra yazılır; ekip kendi başına yeni vaat eklemez.
+
 Takım fotoğrafı, galeri ve öğrenci bilgileri eklenmeden önce okulun yayın onayını ve geçerli kişisel veri işleme koşullarını doğrulayın. Okul, siteye özel KVKK bilgilendirmesini hazırlarken barındırma ve takım e-postasının nasıl işlendiğini de değerlendirmeli. Üçüncü taraf görsellerini doğrudan yüklemek yerine yayını onaylanmış dosyaları kendi sitenizden sunun.
 
 E-posta `airforce@istek.k12.tr`. `emailIsPlaceholder: false` gerçek adresi tıklanabilir yapar. Takıma katılım veya öğrenci/mentor başvuru formu yoktur.

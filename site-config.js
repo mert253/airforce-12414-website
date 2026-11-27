@@ -87,6 +87,10 @@ export const siteConfig = {
     width: 300,
     height: 288,
   },
+  // Sponsorluk seviyeleri ve dosyası hazır olduğunda doldurun; boşken sayfada hiçbir şey görünmez.
+  // Örnekler contentTemplates.sponsorshipTier ve contentTemplates.sponsorshipPdf içinde.
+  sponsorshipTiers: [],
+  sponsorshipPdf: null,
   sponsorNeeds: [
     {
       title: "Robot ve atölye",
@@ -220,5 +224,7 @@ export const contentTemplates = {
   eventProgramItem: { status: "draft", date: "2027-03-19", time: "", title: "", description: "", en: { title: "", description: "" } },
   eventResult: { status: "draft", label: "", result: "", url: "", en: { label: "", result: "" } },
   faq: { status: "draft", question: "", answer: "" },
+  sponsorshipTier: { status: "draft", name: "", amount: "", description: "", benefits: [], en: { name: "", amount: "", description: "", benefits: [] } },
+  sponsorshipPdf: { status: "draft", label: "Sponsorluk dosyası", url: "/assets/sponsorluk.pdf", en: { label: "Sponsorship file" } },
   subteam: { status: "draft", name: "", description: "", en: { name: "", description: "" } },
 };

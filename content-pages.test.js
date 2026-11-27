@@ -571,3 +571,37 @@ test('album photo counts use the singular for one photo', () => {
     assert.match(renderContent('gallery', undefined, 'en'), /<p>2 photos<\/p>/);
   } finally { siteConfig.events = previous; }
 });
+
+test('support page shows sponsorship levels and a file only once they are published', () => {
+  const previous = { tiers: siteConfig.sponsorshipTiers, file: siteConfig.sponsorshipPdf };
+  try {
+    const empty = renderContent('support', undefined, 'tr');
+    assert.doesNotMatch(empty, /support-tiers|Sponsorluk seviyeleri|\.pdf/);
+    siteConfig.sponsorshipTiers = [
+      { status: 'published', name: 'Atölye destekçisi', description: 'Malzeme desteği.', benefits: ['Sitede teşekkür'], en: { name: 'Workshop supporter', description: 'Material support.', benefits: ['A thank-you on the site'] } },
+      { status: 'draft', name: 'DRAFT_TIER' },
+    ];
+    siteConfig.sponsorshipPdf = { status: 'published', label: 'Sponsorluk dosyası', url: '/assets/sponsorluk.pdf', en: { label: 'Sponsorship file' } };
+    const tr = renderContent('support', undefined, 'tr');
+    assert.match(tr, /Atölye destekçisi/);
+    assert.match(tr, /Sitede teşekkür/);
+    assert.match(tr, /href="\/assets\/sponsorluk\.pdf">Sponsorluk dosyası/);
+    assert.doesNotMatch(tr, /DRAFT_TIER/);
+    const en = renderContent('support', undefined, 'en');
+    assert.match(en, /Sponsorship levels/);
+    assert.match(en, /Workshop supporter/);
+    assert.match(en, />Sponsorship file/);
+    siteConfig.sponsorshipPdf = { status: 'draft', label: 'x', url: '/assets/x.pdf' };
+    assert.doesNotMatch(renderContent('support', undefined, 'tr'), /x\.pdf/);
+  } finally { siteConfig.sponsorshipTiers = previous.tiers; siteConfig.sponsorshipPdf = previous.file; }
+});
+
+test('copy follows the content that exists: no robots, no sponsors', () => {
+  assert.doesNotMatch(renderContent('frc', undefined, 'tr'), /robotlarını keşfedin/);
+  assert.doesNotMatch(renderContent('frc', undefined, 'en'), /Explore AIR FORCE robots/);
+  const previous = siteConfig.robots;
+  try {
+    siteConfig.robots = [{ status: 'published', slug: 'ilk-robot', name: 'Pegasus 1', year: 2027 }];
+    assert.match(renderContent('frc', undefined, 'tr'), /AIR FORCE robotlarını keşfedin/);
+  } finally { siteConfig.robots = previous; }
+});

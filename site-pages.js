@@ -76,13 +76,14 @@ function homeContent(lang = 'tr') {
   const robotPhoto = robot && img(robot.image, robot.imageAlt || robot.name, 'robot-stage-image', robot.imageWidth, robot.imageHeight);
   const explore = teamArchiveLinks(t).filter(([, href]) => ['/toplumsal-etki/', '/kaynaklar/'].includes(href));
   const updated = formatContentDate(content.season?.updatedAt, lang);
+  const hasSponsors = content.sponsors.length > 0;
 
   return `<section class="home-photo" aria-labelledby="team-photo-title"><div class="container">
     <div class="section-heading home-photo-heading"><h2 id="team-photo-title">${t('Takımımız', 'Our team')}</h2>
       <a class="text-link" href="/takim/">${t('Takımı tanıyın', 'Meet the team')}${icon()}</a>
     </div>${photo || teamPhotoPlaceholder(t)}</div></section>
   <section class="section home-season-feature" id="sezon"><div class="container">
-    <div class="editorial-label"><span>${t('Robotlar ve sezon', 'Robots and season')}</span></div>
+    <div class="editorial-label"><span>${robot ? t('Robotlar ve sezon', 'Robots and season') : t('Sezon', 'Season')}</span></div>
     <div class="season-feature-grid" data-reveal>
       <div class="season-feature-title">
         <h2>${e(content.season?.year || '2027')}</h2>
@@ -107,7 +108,7 @@ function homeContent(lang = 'tr') {
     ${robotPhoto ? `<div class="robot-stage">${robotPhoto}</div>` : ''}
   </div></section>` : ''}
   <section class="section home-partners" id="sponsorlar"><div class="container" data-reveal>
-    <div class="partners-layout"><div><h2>${t('Sponsorlarımız<br>ve kurumlar', 'Sponsors and<br>organizations')}</h2><a class="text-link" href="/sponsorluk/">${t('Kurumları tanıyın', 'Meet the organizations')}${icon()}</a></div><div class="partner-marks">${[...content.sponsors, content.schoolMark, content.frcOrganizer].map(sponsorMark).join('')}</div></div>
+    <div class="partners-layout"><div><h2>${hasSponsors ? t('Sponsorlarımız<br>ve kurumlar', 'Sponsors and<br>organizations') : t('Okulumuz ve<br>FRC organizatörü', 'Our school and<br>FRC organizer')}</h2><a class="text-link" href="/sponsorluk/">${hasSponsors ? t('Sponsorlarımız', 'Our sponsors') : t('Kurumları tanıyın', 'Meet the organizations')}${icon()}</a></div><div class="partner-marks">${[...content.sponsors, content.schoolMark, content.frcOrganizer].map(sponsorMark).join('')}</div></div>
     <div class="home-support"><div><h3>${t('AIR FORCE’a destek olun', 'Support AIR FORCE')}</h3><p>${t('Malzeme, üretim hizmeti veya yarışma desteği için bizimle iletişime geçin.', 'Get in touch to support the team with materials, manufacturing services or competition costs.')}</p></div><a class="button button-gold" href="/destek-ol/">${t('Sponsor olun', 'Sponsor the team')}</a></div>
   </div></section>
   ${explore.length ? `<section class="section home-explore"><div class="container" data-reveal>
@@ -130,7 +131,7 @@ function buildPages(lang) {
   return [
     {path:'/', title:t('Ana Sayfa', 'Home'), description:t('AIR FORCE #12414, İSTEK Ankara Okulları FIRST Robotics Competition takımı.', 'AIR FORCE #12414, the FIRST Robotics Competition team of İSTEK Ankara Schools.'), body:()=>homeContent(lang)},
     ...routes.map(route => ({...route,body:()=>renderContent(route.kind,route.item,lang)})),
-    {path:'/404.html',title:t('Sayfa bulunamadı', 'Page not found'),hidden:true,description:t('Bu adreste bir sayfa bulunamadı.', 'There is no page at this address.'),body:()=>`<div class="not-found"><p class="lead">${t('Bu adreste bir sayfa bulunamadı.', 'There is no page at this address.')}</p><a class="button button-gold" href="/">${t('Ana sayfaya dön', 'Back to home')}</a></div>`},
+    {path:'/404.html',title:t('Sayfa bulunamadı', 'Page not found'),hidden:true,description:t('Bu adreste bir sayfa bulunamadı.', 'There is no page at this address.'),body:()=>`<div class="not-found"><p class="lead">${t('Aradığınız sayfa taşınmış ya da hiç var olmamış olabilir. Ana sayfadan devam edebilirsiniz.', 'The page you’re looking for may have moved or may never have existed. You can continue from the home page.')}</p><div class="entry-actions"><a class="button button-gold" href="/">${t('Ana sayfaya dön', 'Back to home')}</a><a class="text-link" href="/robotlar/">${t('Sezon sayfası', 'Season page')}${icon()}</a><a class="text-link" href="/iletisim/">${t('İletişim', 'Contact')}${icon()}</a></div></div>`},
   ].map(page => {
     const path = localizedPath(page.path, lang);
     return {...page, lang, originalPath:page.path, path, file:path.slice(1) + (path.endsWith('/') ? 'index.html' : '')};

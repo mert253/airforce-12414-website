@@ -127,6 +127,7 @@
 .support-needs .content-card li { position: relative; padding-left: var(--space-5); }
 .support-needs .content-card li::before { content: ''; position: absolute; left: 0; top: .75em; width: 8px; height: 1px; background: var(--line-strong); }
 .support-note { margin-top: var(--space-6); }
+.support-needs .tier-amount { margin-bottom: var(--space-2); color: var(--ink); font-weight: 600; }
 .support-note + .text-link { margin-top: var(--space-2); }
 
 /* Contact page */
@@ -182,7 +183,7 @@ body:has(.lightbox[open]) { overflow: hidden; }
 /* 404 */
 .not-found { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; min-height: 40vh; padding-block: var(--space-12); }
 .not-found .lead { font-size: 20px; }
-.not-found .button { margin-top: var(--space-6); }
+.not-found .entry-actions { margin-top: var(--space-6); }
 
 /* Touch screens get 44px targets on the smaller controls. */
 @media (pointer: coarse) {

@@ -364,3 +364,26 @@ test('link icons carry meaning: external, email and back links have one, interna
     }
   }
 });
+
+test('the home sponsor block names what it actually shows, in both languages', () => {
+  assert.equal(siteConfig.sponsors.length, 0);
+  assert.match(rendered.get('/'), /Okulumuz ve<br>FRC organizatörü/);
+  assert.match(rendered.get('/en/'), /Our school and<br>FRC organizer/);
+  assert.doesNotMatch(rendered.get('/'), /Sponsorlarımız<br>ve kurumlar/);
+  const previous = siteConfig.sponsors;
+  try {
+    siteConfig.sponsors = [{ name: 'Örnek A.Ş.', role: 'Destekçi', url: 'https://example.com' }];
+    const html = renderPage(readFileSync(resolve(root, 'index.html'), 'utf8'), pages[0]);
+    assert.match(html, /Sponsorlarımız<br>ve kurumlar/);
+  } finally { siteConfig.sponsors = previous; }
+});
+
+test('the 404 page is written in both languages and links onward', () => {
+  const tr = rendered.get('/404.html'), en = rendered.get('/en/404.html');
+  assert.match(tr, /Sayfa bulunamadı/);
+  assert.match(en, /Page not found/);
+  assert.match(en, /may have moved or may never have existed/);
+  assert.match(en, /href="\/en\/"[^>]*>Back to home/);
+  assert.match(en, /href="\/en\/robots\/"/);
+  assert.doesNotMatch(en, /Ana sayfaya dön|Sayfa bulunamadı/);
+});

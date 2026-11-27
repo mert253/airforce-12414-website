@@ -469,7 +469,7 @@ function projectGallery({ content, t, lang }) {
     </section>`;
   }).join('');
 }
-function frc({ t }) {
+function frc({ content, t }) {
   const stages = [
     [t('Tasarım', 'Design'), t('Takımlar oyunu analiz eder, stratejilerini belirler ve robotu tasarlar.', 'Teams study the game, choose a strategy and design their robot.')],
     [t('Üretim ve test', 'Build and test'), t('Takımlar robotu üretir, programlar ve performansını test eder.', 'Teams build, program and test their robot.')],
@@ -490,7 +490,7 @@ function frc({ t }) {
     <div>${heading(t('FIRST kültürü', 'FIRST culture'), t('FIRST’ün takım çalışması ilkeleri', 'How teams work together'))}</div>
     <div><h3>Gracious Professionalism®</h3><p>${t('İşe özen göstermek ve diğer insanlara saygı duymak.', 'Do your work with care and treat others with respect.')}</p><h3>Coopertition®</h3><p>${t('Yarışma sırasında diğer takımlarla yardımlaşmak ve birlikte öğrenmek.', 'Help and learn from other teams while competing with them.')}</p>${anchor(t('FIRST’ün yaklaşımı', 'Learn about the FIRST approach'), 'https://www.firstinspires.org/about/vision-and-mission', 'text-link', true)}</div>
   </section>
-  <section class="section">${anchor(t('AIR FORCE robotlarını keşfedin', 'Explore AIR FORCE robots'), '/robotlar/', 'button button-gold')}</section>`;
+  <section class="section">${routable(content.robots).length ? anchor(t('AIR FORCE robotlarını keşfedin', 'Explore AIR FORCE robots'), '/robotlar/', 'button button-gold') : anchor(t('Sezon sayfası', 'Season page'), '/robotlar/', 'button button-gold')}</section>`;
 }
 function sponsorCard(item, t) {
   const mark = image(item.logo, item.name, item.width, item.height) || `<strong>${e(item.name)}</strong>`;
@@ -514,7 +514,13 @@ function sponsors({ content, t }) {
     ${anchor(t('Destek seçenekleri', 'Ways to support the team'), '/destek-ol/', 'button button-gold')}
   </section>`;
 }
+const sponsorshipTiers = items => publishedRecords(items).filter(tier => String(tier.name || '').trim());
+function sponsorshipFile(file) {
+  return file?.status === 'published' && safeHref(file.url) && String(file.label || '').trim() ? file : null;
+}
 function support({ content, t }) {
+  const tiers = sponsorshipTiers(content.sponsorshipTiers);
+  const file = sponsorshipFile(content.sponsorshipPdf);
   const needs = (Array.isArray(content.sponsorNeeds) ? content.sponsorNeeds : []).filter(need => need?.title);
   const mailto = sponsorshipMailto(content, t);
   const upcoming = selectUpcomingEvent(content.events);
@@ -531,6 +537,7 @@ function support({ content, t }) {
     <div class="support-contact">
       <div class="entry-actions">${anchor(t('Sponsorluk için yazın', 'Email us about sponsorship'), mailto, 'button button-gold')}</div>
       <p class="support-email"><span>${e(content.email)}</span>${content.emailIsPlaceholder ? '' : copyEmailControl(content.email, t)}</p>
+      ${file ? anchor(file.label, file.url, 'text-link', /^https?:/i.test(file.url)) : ''}
     </div>
   </section>
   ${needs.length ? `<section class="section support-needs" aria-labelledby="support-needs-title">
@@ -541,6 +548,13 @@ function support({ content, t }) {
     </article>`).join('')}</div>
     <p class="support-note">${t('E-postanızda katkı sağlayabileceğiniz alanı ve destek biçimini belirtebilirsiniz.', 'Tell us which area you’d like to support and how you can help.')}</p>
     ${anchor(t('Sponsorlarımız', 'Our sponsors'), '/sponsorluk/')}
+  </section>` : ''}
+  ${tiers.length ? `<section class="section support-needs support-tiers" aria-labelledby="support-tiers-title">
+    <h2 class="section-heading" id="support-tiers-title">${t('Sponsorluk seviyeleri', 'Sponsorship levels')}</h2>
+    <div class="content-grid cols-3">${tiers.map(tier => `<article class="content-card">
+      <h3>${e(tier.name)}</h3>${tier.amount ? `<p class="tier-amount">${e(tier.amount)}</p>` : ''}${para(tier.description)}
+      ${Array.isArray(tier.benefits) && tier.benefits.length ? `<ul>${tier.benefits.filter(Boolean).map(benefit => `<li>${e(benefit)}</li>`).join('')}</ul>` : ''}
+    </article>`).join('')}</div>
   </section>` : ''}`;
 }
 function contact({ content, t }) {
