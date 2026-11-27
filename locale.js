@@ -25,7 +25,7 @@ const englishSections = {
   takim: 'team', tarihce: 'history', basarilar: 'awards',
   robotlar: 'robots', 'toplumsal-etki': 'outreach',
   kaynaklar: 'resources', etkinlikler: 'events', gunluk: 'journal', galeri: 'gallery',
-  'proje-galerisi': 'project-gallery', sponsorluk: 'sponsors', 'destek-ol': 'support', iletisim: 'contact',
+  'proje-galerisi': 'project-gallery', sponsorluk: 'sponsors', 'destek-ol': 'support', iletisim: 'contact', kvkk: 'personal-data-protection',
 };
 
 export function localizedPath(path, lang = 'tr') {

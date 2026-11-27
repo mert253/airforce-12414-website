@@ -258,7 +258,7 @@ function siteFooter(lang) {
         </div>
         ${pageLinks(footerNavigation(t), lang)}
       </div>
-      <div class="footer-bottom"><span>© <span data-current-year>${new Date().getFullYear()}</span> AIR FORCE #12414</span><a href="#top">${t('Sayfanın başına dön', 'Back to top')}${icon('up')}</a></div>
+      <div class="footer-bottom"><div class="footer-legal"><span>© <span data-current-year>${new Date().getFullYear()}</span> AIR FORCE #12414</span><a href="${localizedPath('/kvkk/', lang)}">${t('KVKK', 'Personal Data Protection')}</a></div><a href="#top">${t('Sayfanın başına dön', 'Back to top')}${icon('up')}</a></div>
     </div>
   </footer>
   <button type="button" class="back-to-top" data-back-to-top aria-label="${t('Sayfanın başına dön', 'Back to top')}" hidden>${icon('up')}</button>

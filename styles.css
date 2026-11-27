@@ -230,6 +230,7 @@ p + p { margin-top: var(--space-4); }
 .site-footer a { transition: color var(--dur-fast) var(--ease); }
 .site-footer a:hover { color: #fff; }
 .footer-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3) var(--space-6); min-height: 72px; border-top: 1px solid var(--dark-line); color: #a6b2c5; font-size: var(--fs-meta); line-height: 1.6; }
+.footer-legal { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-6); }
 .footer-bottom a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }
 .footer-bottom svg { width: 14px; height: 14px; }
 

@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { pages, renderPage } from './site-pages.js';
 import { siteConfig } from './site-config.js';
+import { generateSitemapXml } from './seo-utils.js';
 import { buildContentRoutes, renderContent } from './content-pages.js';
 
 const root = import.meta.dirname;
@@ -504,4 +505,34 @@ test('a finished event keeps its dates in the schema but no longer claims to be 
   assert.match(html, /data-event-phase[^>]*>Tamamlanan etkinlik</);
   const upcoming = JSON.parse(rendered.get('/etkinlikler/ankara-regional/').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'].find(item => item['@type'] === 'Event');
   assert.equal(upcoming.eventStatus, 'https://schema.org/EventScheduled');
+});
+
+test('KVKK page and its English mirror link to school documents and to each other', () => {
+  const tr = rendered.get('/kvkk/');
+  const en = rendered.get('/en/personal-data-protection/');
+  assert.ok(tr && en, 'both privacy pages exist');
+  assert.ok(tr.includes('Kişisel Verilerin Korunması'));
+  assert.ok(tr.includes('<p class="lead">AIR FORCE #12414 web sitesinde İSTEK Ankara Okulları’nın kişisel verilerin korunmasına ilişkin politika ve aydınlatma metinleri esas alınmaktadır. İlgili belgelere aşağıdaki bağlantıdan ulaşabilirsiniz.</p>'));
+  assert.match(tr, /<a class="text-link" href="https:\/\/ankara\.istek\.k12\.tr\/tr\/kvkk" target="_blank" rel="noopener">/);
+  assert.ok(tr.includes('class="language-switch" href="/en/personal-data-protection/" hreflang="en"'));
+  assert.ok(en.includes('class="language-switch" href="/kvkk/" hreflang="tr"'));
+  assert.ok(en.includes('English translations of the Turkish documents published by İSTEK Ankara Schools'));
+  for (const file of ['personal-data-processing-privacy-notice.pdf', 'personal-data-retention-and-destruction-policy.pdf']) {
+    const href = `/documents/kvkk/${file}`;
+    assert.match(en, new RegExp(`<a class="text-link" href="${href}" target="_blank" rel="noopener">`));
+    assert.ok(existsSync(resolve(root, 'public', href.slice(1))), `${href} is missing from public/`);
+  }
+  assert.ok(!/\sdownload[\s=>]/.test(en));
+});
+
+test('the footer links to the personal data protection page in both languages', () => {
+  assert.match(rendered.get('/'), /<a href="\/kvkk\/">KVKK<\/a>/);
+  assert.match(rendered.get('/en/'), /<a href="\/en\/personal-data-protection\/">Personal Data Protection<\/a>/);
+  assert.match(rendered.get('/iletisim/'), /href="\/kvkk\/"[^>]*>[^<]*Kişisel Verilerin Korunması/);
+});
+
+test('KVKK pages are in the sitemap with hreflang alternates', () => {
+  const xml = generateSitemapXml(pages.filter(page => !page.hidden && !page.noindex), siteConfig.siteUrl);
+  for (const url of ['https://team12414.com/kvkk/', 'https://team12414.com/en/personal-data-protection/']) assert.ok(xml.includes(`<loc>${url}</loc>`), url);
+  assert.ok(xml.includes('hreflang="en" href="https://team12414.com/en/personal-data-protection/"'));
 });

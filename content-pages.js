@@ -139,6 +139,7 @@ const routes = [
   ['frc', '/frc/', 'FIRST & FRC', 'Bir robotun ötesi', 'FIRST Robotics Competition ve AIR FORCE takımının yer aldığı robotik programı.'],
   ['sponsors', '/sponsorluk/', 'Sponsorlarımız', 'Sponsorluk', 'AIR FORCE #12414 sponsorları, okulumuz ve Türkiye’deki FRC organizatörü.'],
   ['support', '/destek-ol/', 'Sponsor olun', 'AIR FORCE ile', 'AIR FORCE için malzeme, üretim ve yarışma desteği seçenekleri ve sponsorluk iletişimi.'],
+  ['privacy', '/kvkk/', 'Kişisel Verilerin Korunması', 'KVKK', 'AIR FORCE #12414 web sitesinde esas alınan İSTEK Ankara Okulları kişisel verilerin korunması politika ve aydınlatma metinleri.'],
   ['contact', '/iletisim/', 'İletişim', 'Ankara, Türkiye', 'AIR FORCE #12414: airforce@istek.k12.tr ve Instagram airforce12414.'],
 ];
 const englishMetadata = {
@@ -156,6 +157,7 @@ const englishMetadata = {
   frc: ['FIRST & FRC', 'Beyond the robot', 'Learn about FIRST Robotics Competition, the robotics program AIR FORCE takes part in.'],
   sponsors: ['Our sponsors', 'Sponsorship', 'Our sponsors, our school and the FIRST Robotics Competition organizer in Türkiye.'],
   support: ['Sponsor the team', 'AIR FORCE 12414', 'Support AIR FORCE with materials, fabrication or competition expenses, or contact us about sponsorship.'],
+  privacy: ['Personal Data Protection', 'Privacy', 'The İSTEK Ankara Schools personal data protection policy and privacy notices that apply to the AIR FORCE #12414 website.'],
   contact: ['Contact', 'Ankara, Türkiye', 'Contact AIR FORCE #12414 at airforce@istek.k12.tr or on Instagram at @airforce12414.'],
 };
 // Summary, date and place joined by " · ". The place is the first part dropped when the line would be cut off in search results.
@@ -580,6 +582,18 @@ function support({ content, t }) {
     </article>`).join('')}</div>
   </section>` : ''}`;
 }
+function privacy({ t, lang }) {
+  const documents = lang === 'en'
+    ? [
+      ['Personal Data Processing Privacy Notice', '/documents/kvkk/personal-data-processing-privacy-notice.pdf'],
+      ['Personal Data Retention and Destruction Policy', '/documents/kvkk/personal-data-retention-and-destruction-policy.pdf'],
+    ]
+    : [['İSTEK Ankara Okulları KVKK Belgeleri', 'https://ankara.istek.k12.tr/tr/kvkk']];
+  return `<section class="section"><p class="lead">${t('AIR FORCE #12414 web sitesinde İSTEK Ankara Okulları’nın kişisel verilerin korunmasına ilişkin politika ve aydınlatma metinleri esas alınmaktadır. İlgili belgelere aşağıdaki bağlantıdan ulaşabilirsiniz.', 'The AIR FORCE #12414 website follows the personal data protection policy and privacy notices of İSTEK Ankara Schools. You can find the relevant documents below.')}</p>
+    <div class="entry-actions">${documents.map(([label, url]) => anchor(label, url, 'text-link', true)).join('')}</div>
+    ${lang === 'en' ? '<p class="support-note">These documents are English translations of the Turkish documents published by İSTEK Ankara Schools.</p>' : ''}
+  </section>`;
+}
 function contact({ content, t }) {
   const events = publishedRecords(content.events).filter(item => String(item.title || '').trim());
   const faqs = publishedRecords(content.faq);
@@ -603,14 +617,14 @@ function contact({ content, t }) {
     <h2 class="section-heading">${t('Site ve gizlilik', 'Website and privacy')}</h2>
     <p>${t('Bu tanıtım sitesi form, reklam veya ziyaretçi analitiği kullanmaz. Açılış animasyonunun aynı sekmede tekrarlanmaması için tarayıcının oturum belleğine bir tercih kaydedilir.', 'This informational site uses no forms, advertising or visitor analytics. Your browser stores a session flag to avoid repeating the opening animation in the same tab.')}</p>
     <p>${t('Site Vercel üzerinden sunulur. Takıma e-posta gönderirseniz adresiniz ve iletiniz takıma ulaşır. Instagram bağlantısı sizi Instagram’a götürür.', 'Vercel hosts this site. If you email the team, the team receives your address and message. The Instagram link takes you to Instagram.')}</p>
-    <div class="entry-actions">${anchor(t('Vercel gizlilik bildirimi', 'Vercel Privacy Notice'), 'https://vercel.com/legal/privacy-notice', 'text-link', true)}${anchor(t('Okulun kişisel veri aydınlatma metni', 'School privacy notice (Turkish)'), 'https://ankara.istek.k12.tr/sites/default/files/2024-01/aydinlatma-formu.pdf', 'text-link', true)}</div>
+    <div class="entry-actions">${anchor(t('Vercel gizlilik bildirimi', 'Vercel Privacy Notice'), 'https://vercel.com/legal/privacy-notice', 'text-link', true)}${anchor(t('Kişisel Verilerin Korunması', 'Personal Data Protection'), '/kvkk/')}</div>
   </section>
   ${faqs.length ? `<section class="section"><h2 class="section-heading">${t('Sık sorulanlar', 'Frequently asked questions')}</h2>
     <div class="accordion-list">${faqs.map(faq => `<details class="accordion"><summary>${e(faq.question)}</summary><div>${para(faq.answer)}</div></details>`).join('')}</div>
   </section>` : ''}`;
 }
 
-const renderers = { team, history, awards, robots, robot, impact, project, resources, events, event, news, article, gallery, projectGallery, frc, sponsors, support, contact };
+const renderers = { team, history, awards, robots, robot, impact, project, resources, events, event, news, article, gallery, projectGallery, frc, sponsors, support, privacy, contact };
 export function renderContent(kind, item, lang = 'tr') {
   if (!Object.hasOwn(renderers, kind)) throw new Error(`Unknown content page: ${kind}`);
   const content = siteContent(lang);
