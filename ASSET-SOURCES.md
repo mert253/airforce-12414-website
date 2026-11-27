@@ -16,8 +16,9 @@ Yayın incelemesinde 3M logosu, önceki İSTEK görseli ve sponsorluk sunumları
 
 Önceki düzenlere ait aşağıdaki notlar varlıkların kökenini korumak içindir.
 
-## Güncel üst bant: yalnızca Anıtkabir ve Kocatepe
+## Güncel alt bant (footer): Ankara silüeti
 
+- Footer silüeti: kullanıcının sağladığı `12.png` (Kocatepe, Hitit Güneşi, Atakule, Anıtkabir) renk parazitleri temizlenip tek ton gümüşe (#c9d1dd) çevrildi, `public/assets/ankara-skyline-1000.webp` olarak kullanılıyor. Eski `anitkabir-kocatepe-620.webp` artık kullanılmıyor.
 - Kullanıcının son düzeltmesiyle önceki şehir silüeti kullanım dışı bırakıldı. Kullanılan dosya: `public/assets/anitkabir-kocatepe-620.webp` (PNG kaynağı kaldırıldı).
 - Yerleşik görsel üretim aracıyla, önceki silüet referans alınarak üretildi. Son yönergenin amacı: yalnızca solda Anıtkabir, yanında sağda Kocatepe; başka bina veya kule olmadan şeffaf zeminde sade gümüş silüet, doğal mimari oranlar, metinsiz.
 - Bant ve mobil menü sitenin `--navy` rengini kullanır. Görsel `--muted` gümüş rengine maskelenir; `contain` oranı korur ve iki yapının tamamını gösterir. Önceki mavi zemin kaldırıldı.

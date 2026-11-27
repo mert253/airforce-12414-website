@@ -56,10 +56,9 @@
 .home-season-feature { background: var(--silver); }
 .editorial-label { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-8); color: var(--muted); font-size: var(--fs-small); font-weight: 600; letter-spacing: .01em; }
 .editorial-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
-.season-feature-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "title event" "note event"; align-items: start; gap: var(--space-8) clamp(32px, 6vw, 80px); }
+.season-feature-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "title event"; align-items: start; gap: var(--space-8) clamp(32px, 6vw, 80px); }
 .season-feature-title { grid-area: title; min-width: 0; }
 .season-event { grid-area: event; min-width: 0; }
-.season-frc-note { grid-area: note; min-width: 0; max-width: 46ch; padding: var(--space-6); border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--paper); }
 .season-feature-title h2 { color: var(--navy); font-size: clamp(64px, 8vw, 96px); line-height: .9; letter-spacing: 0; font-variant-numeric: tabular-nums lining-nums; }
 .season-subtitle { margin-top: var(--space-3); color: var(--ink); font-size: clamp(24px, 2.4vw, 28px); line-height: 1.15; }
 .season-description { max-width: 46ch; margin-top: var(--space-4); color: var(--muted); }
@@ -69,8 +68,8 @@
 .home-season-summary dt::after { content: ':'; }
 .home-season-summary dd { margin: 0; color: var(--ink); font-weight: 500; }
 .season-feature-title > .text-link { margin-top: var(--space-4); }
-.season-frc-note p { color: var(--muted); font-size: 15px; line-height: 1.6; }
-.season-frc-note .text-link { margin-top: var(--space-2); }
+.season-frc-note { max-width: 46ch; margin-top: var(--space-4); color: var(--muted); font-size: 15px; line-height: 1.6; }
+.season-frc-note .text-link { display: inline-flex; min-height: 0; padding-block: 12px; margin-block: -12px; }
 
 /* Robot of the season (shown once a robot is published). */
 .home-robot { background: var(--paper); border-block: 1px solid var(--line); }
@@ -144,9 +143,8 @@
   .partners-layout { grid-template-columns: minmax(0, 1fr); gap: var(--space-8); }
 }
 @media (max-width: 720px) {
-  .season-feature-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "title" "event" "note"; gap: var(--space-8); }
-  .season-frc-note { max-width: none; }
-  .home-robot-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-8); }
+  .season-feature-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "title" "event"; gap: var(--space-8); }
+    .home-robot-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-8); }
   .home-photo-heading { flex-wrap: nowrap; align-items: center; }
   .home-photo .team-photo-image { object-fit: contain; }
   .partners-layout { gap: var(--space-4); }

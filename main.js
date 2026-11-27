@@ -1,6 +1,7 @@
 import { matchesCollectionItem } from './collection-utils.js';
 import { installPageTransitions } from './page-transitions.js';
 import { getEventCountdown, phaseLabel } from './season-utils.js';
+const eventPhaseOf = (start, end) => getEventCountdown(start, end)?.state || '';
 
 installPageTransitions();
 
@@ -173,6 +174,18 @@ if (dialog && galleryLinks.length && typeof dialog.showModal === 'function') {
 document.querySelectorAll('[data-event-phase]').forEach(el => {
   const label = phaseLabel({ upcoming: el.dataset.labelUpcoming, live: el.dataset.labelLive, ended: el.dataset.labelEnded }, el.dataset.start, el.dataset.end);
   if (label) el.textContent = label;
+});
+// Structured data follows the same rule: once an event has ended, it no longer claims to be scheduled.
+document.querySelectorAll('script[type="application/ld+json"]').forEach(script => {
+  try {
+    const data = JSON.parse(script.textContent);
+    const nodes = Array.isArray(data['@graph']) ? data['@graph'] : [data];
+    let changed = false;
+    for (const node of nodes) {
+      if (node['@type'] === 'Event' && node.eventStatus && eventPhaseOf(node.startDate, node.endDate) === 'ended') { delete node.eventStatus; changed = true; }
+    }
+    if (changed) script.textContent = JSON.stringify(data);
+  } catch { /* leave malformed data untouched */ }
 });
 document.querySelectorAll('[data-current-year]').forEach(el => { el.textContent = String(new Date().getFullYear()); });
 

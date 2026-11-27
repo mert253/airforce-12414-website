@@ -49,7 +49,7 @@ function teamPhotoPlaceholder(t) {
 }
 function sponsorMark(sponsor) {
   return `<div class="home-partner">
-    ${a(img(sponsor.logo, sponsor.name, '', sponsor.width, sponsor.height) || `<strong>${e(sponsor.name)}</strong>`, sponsor.url, 'target="_blank" rel="noopener noreferrer"')}
+    ${a(img(sponsor.logo, sponsor.name, '', sponsor.width, sponsor.height) || `<strong>${e(sponsor.name)}</strong>`, sponsor.url, 'target="_blank" rel="noopener"')}
     <span>${e(sponsor.role)}</span>
   </div>`;
 }
@@ -95,6 +95,7 @@ function homeContent(lang = 'tr') {
         <h2>${e(content.season?.year || '2027')}</h2>
         <p class="season-subtitle">${e(content.season?.status || t('Sezon durumu', 'Season status'))}</p>
         <p class="season-description">${e(content.season?.description || content.seasonStatus)}</p>
+        <p class="season-frc-note">${t('FIRST Robotics Competition: lise takımlarının her sezon yeni bir oyun için robot geliştirdiği uluslararası program.', 'FIRST Robotics Competition: an international program where high school teams build robots for a new game each season.')} <a class="text-link" href="/frc/">${t('FIRST ve FRC hakkında', 'About FIRST and FRC')}${icon()}</a></p>
         ${updated ? `<dl class="home-season-summary"><div><dt>${t('Son güncelleme', 'Last updated')}</dt><dd><time datetime="${e(content.season.updatedAt)}">${e(updated)}</time></dd></div></dl>` : ''}
         <a class="text-link" href="/robotlar/">${t('Sezon sayfası', 'Season page')}${icon()}</a>
       </div>
@@ -104,9 +105,8 @@ function homeContent(lang = 'tr') {
         <p class="season-date">${e(event.date)}</p>
         <p class="season-location">${e(event.location)}</p>
         <div class="event-countdown" data-countdown-start="${e(event.startDate)}" data-countdown-end="${e(event.endDate)}" aria-live="off" hidden></div>
-        <div class="entry-actions">${eventPath(event) ? `<a class="text-link" href="${eventPath(event)}">${t('Etkinlik ayrıntıları', 'Event details')}${icon()}</a>` : ''}${a(t('Resmî etkinlik bilgisi', 'Official event information') + icon('external'), event.url, 'class="text-link" target="_blank" rel="noopener noreferrer"')}</div>
+        <div class="entry-actions">${eventPath(event) ? `<a class="text-link" href="${eventPath(event)}">${t('Etkinlik ayrıntıları', 'Event details')}${icon()}</a>` : ''}${a(t('Resmî etkinlik bilgisi', 'Official event information') + icon('external'), event.url, 'class="text-link" target="_blank" rel="noopener"')}</div>
       </article>` : ''}
-      <div class="season-frc-note"><p>${t('FIRST Robotics Competition: lise takımlarının her sezon yeni bir oyun için robot geliştirdiği uluslararası program.', 'FIRST Robotics Competition: an international program where high school teams build robots for a new game each season.')}</p><a class="text-link" href="/frc/">${t('FIRST ve FRC hakkında', 'About FIRST and FRC')}${icon()}</a></div>
     </div>
   </div></section>
   ${robot ? `<section class="section home-robot"><div class="container home-robot-grid">
@@ -148,7 +148,7 @@ function buildPages(lang) {
   return [
     {path:'/', title:t('Ana Sayfa', 'Home'), description:homeDescription(lang), body:()=>homeContent(lang)},
     ...routes.map(route => ({...route,body:()=>renderContent(route.kind,route.item,lang)})),
-    {path:'/404.html',title:t('Sayfa bulunamadı', 'Page not found'),hidden:true,description:t('Bu adreste bir sayfa bulunamadı.', 'There is no page at this address.'),body:()=>`<div class="not-found"><p class="lead">${t('Aradığınız sayfa taşınmış ya da hiç var olmamış olabilir. Ana sayfadan devam edebilirsiniz.', 'The page you’re looking for may have moved or may never have existed. You can continue from the home page.')}</p><div class="entry-actions"><a class="button button-gold" href="/">${t('Ana sayfaya dön', 'Back to home')}</a><a class="text-link" href="/robotlar/">${t('Sezon sayfası', 'Season page')}${icon()}</a><a class="text-link" href="/iletisim/">${t('İletişim', 'Contact')}${icon()}</a></div></div>`},
+    {path:'/404.html',title:t('Sayfa bulunamadı', 'Page not found'),hidden:true,description:t('Bu adreste bir sayfa bulunamadı.', 'There is no page at this address.'),body:()=>`<div class="not-found"><p class="lead">${t('Aradığınız sayfa taşınmış ya da hiç var olmamış olabilir. Ana sayfadan devam edebilirsiniz.', 'The page you’re looking for may have moved or may never have existed. You can continue from the home page.')}</p><div class="entry-actions"><a class="button button-gold" href="/">${t('Ana sayfaya dön', 'Back to home')}</a><a class="text-link" href="/robotlar/">${t('Sezon sayfası', 'Season page')}${icon()}</a><a class="text-link" href="/iletisim/">${t('İletişim', 'Contact')}${icon()}</a></div>${lang === 'tr' ? '<p lang="en" class="not-found-en">Page not found. <a class="text-link" href="/en/">Go to the English site</a></p>' : ''}</div>`},
   ].map(page => {
     const path = localizedPath(page.path, lang);
     return {...page, lang, originalPath:page.path, path, file:path.slice(1) + (path.endsWith('/') ? 'index.html' : '')};
@@ -242,7 +242,7 @@ function siteFooter(lang) {
           <small>Türkiye</small>
         </figcaption>
         <div class="footer-skyline">
-          <img src="/assets/anitkabir-kocatepe-620.webp" alt="${t('Anıtkabir ve Kocatepe Camii silüeti', 'Silhouette of Anıtkabir and Kocatepe Mosque')}" width="620" height="207" loading="lazy" decoding="async">
+          <img src="/assets/ankara-skyline-1000.webp" alt="${t('Ankara silüeti: Kocatepe Camii, Hitit Güneşi, Atakule ve Anıtkabir', 'Ankara skyline: Kocatepe Mosque, Hittite Sun, Atakule and Anıtkabir')}" width="1000" height="326" loading="lazy" decoding="async">
         </div>
       </div>
     </figure>
@@ -253,7 +253,7 @@ function siteFooter(lang) {
           <p>${e(content.school.name)}<br>FIRST Robotics Competition · #12414</p>
           <div class="footer-contact">
             <span class="footer-email-row">${a(e(content.email) + icon('mail'), `mailto:${content.email}`)}${content.emailIsPlaceholder ? '' : `<span class="copy-email-wrap"><button type="button" class="copy-email-btn copy-email-btn--dark" data-copy-email="${e(content.email)}" aria-label="${e(t('E-posta adresini kopyala', 'Copy email address'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>${t('Kopyala', 'Copy')}</span></button><span class="sr-only" role="status" aria-live="polite" data-copy-status></span></span>`}</span>
-            ${a('Instagram' + icon('external'), content.instagram, 'target="_blank" rel="noopener noreferrer"')}
+            ${a('Instagram' + icon('external'), content.instagram, 'target="_blank" rel="noopener"')}
           </div>
         </div>
         ${pageLinks(footerNavigation(t), lang)}

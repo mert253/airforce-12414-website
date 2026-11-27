@@ -184,6 +184,7 @@ body:has(.lightbox[open]) { overflow: hidden; }
 .not-found { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; min-height: 40vh; padding-block: var(--space-12); }
 .not-found .lead { font-size: 20px; }
 .not-found .entry-actions { margin-top: var(--space-6); }
+.not-found-en { margin-top: var(--space-6); }
 
 /* Touch screens get 44px targets on the smaller controls. */
 @media (pointer: coarse) {

@@ -360,7 +360,7 @@ test('link icons carry meaning: external, email and back links have one, interna
     for (const link of mainLinks(html).filter(item => !item.logo)) {
       if (link.attributes.includes('target="_blank"')) {
         assert.equal(link.icon, 'external', `${path}: ${link.label}`);
-        assert.match(link.attributes, /rel="noopener noreferrer"/, `${path}: ${link.label}`);
+        assert.match(link.attributes, /rel="noopener"/, `${path}: ${link.label}`);
       }
       if (link.href.startsWith('mailto:')) assert.equal(link.icon, 'mail', `${path}: ${link.label}`);
       if (/class="button\b/.test(link.attributes) && link.href.startsWith('/') && !/^(Tüm|Back|All)/.test(link.label)) assert.equal(link.icon, '', `${path}: ${link.label}`);

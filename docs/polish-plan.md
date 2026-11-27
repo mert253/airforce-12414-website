@@ -103,7 +103,7 @@
 - Tekrarlanan bölüm giriş animasyonları: `main.js` reveal bloğu ve `data-reveal` işaretleri kalkar. Hero girişi (`@keyframes arrive`), Pegasus açılışı ve parlaması kalır.
 - Hero eğimi (`hero-motion.js`): açılar yaklaşık yarıya iner; `prefers-reduced-motion` ve ince imleç kontrolü korunur.
 - Bilgi tekrarlayan bölüm etiketleri (`eyebrow`) kalkar: `heading()` yalnızca başlık alır; kartlardaki "Sponsorluk", "Takvim", "Arşiv" gibi başlığı tekrarlayanlar silinir. Bilgi taşıyanlar (yıl/oyun, "Etkinlik") kalır.
-- Altın: düğme, aktif menü, canlı rozet ve odak halkasında kalır. Eyebrow, bağlantı hover ve kart hover kenarlığı nötr (lacivert/gri) olur.
+- Altın: sabit bir kullanım listesine bağlı değil; önemli vurgularda (birincil düğme, aktif menü, canlı durum, odak) ölçülü kullanılır. Eyebrow, bağlantı hover ve kart hover kenarlığı nötr (lacivert/gri) olur.
 - Düğme köşeleri: hepsi `--radius-control` (4 px); sapan varsa düzeltilir.
 - Dekoratif başlık sonu noktaları: başlıklar/etiketler taranır, bulunanlar kaldırılır.
 - Ana sayfa sezon bölümü açık zeminde; FIRST açıklaması beyaz bir kartın içine alınır.
@@ -143,3 +143,17 @@ Dal temeli: `fc6bc1b` (son yeniden tasarım) `feat/polish-plan` içinde zaten va
 - `team12414.com` ve `.org` alan adları bu makineden çözümlenmedi (NXDOMAIN); `air-force-12414-v2.vercel.app` 200 döndü. README iki adresi de yazar.
 
 **Sayfa denetimi:** 21 sayfa (TR ve EN) × 375, 820, 1440 px: yatay taşma yok, dokunma hedefleri ≥44 px, konsol hatası yok (yalnızca bilerek 404 dönen adresler), görünür düğmelerin köşesi 4 px.
+
+## Son durum (son düzeltme turu)
+
+- Dış bağlantılarda `rel="noopener"` var, `noreferrer` yok; `Referrer-Policy` `strict-origin-when-cross-origin`.
+- Ana sayfada FIRST açıklaması sezon metninin içinde, ayrı beyaz kart yok.
+- Etkinlik sonrası (saat ileri alınıp yeniden derlemeden): etiket "Tamamlanan etkinlik", geri sayım gizli, JSON-LD'de `eventStatus` yok, altbilgi yılı güncel.
+- 102 test ve build geçti; TR/EN sayfalar 375, 820, 1440 px'te taşmasız.
+- Alan adı: `team12414.com` için DNS kaydı yok (NXDOMAIN). Çalışan adres `air-force-12414-v2.vercel.app` (200).
+
+**Açık maddeler**
+1. Bilinmeyen `/en/` adreslerinin Vercel'de İngilizce içerik + HTTP 404 döndürmesi doğrulanamadı: Vercel CLI/oturumu yok, preview oluşturulamadı. Yerelde doğru. Yayın öncesi preview'da `npm run check:deploy -- <preview-adresi>`. Yedek: Türkçe 404 sayfasında İngilizce satır.
+2. Yayındaki site eski yapılandırmayla çalışıyor (`no-referrer`, önbellek başlıkları yok) ta ki yeni sürüm deploy edilene kadar.
+3. Gerçek takım fotoğrafı eklendikten sonra mobil Lighthouse ölçümü bekliyor.
+4. Alan adının DNS ve Vercel bağlantısı.

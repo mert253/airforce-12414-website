@@ -27,7 +27,7 @@ function anchor(label, url, className = 'text-link', external = false, back = fa
   const href = safeHref(url);
   if (!href) return '';
   const iconName = linkIconName(href, { external, back, button: /\bbutton\b/.test(className) && !back });
-  return `<a class="${className}" href="${e(href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${labelWithIcon(e(label), iconName)}</a>`;
+  return `<a class="${className}" href="${e(href)}"${external ? ' target="_blank" rel="noopener"' : ''}>${labelWithIcon(e(label), iconName)}</a>`;
 }
 function copyEmailControl(email, t) {
   if (!email) return '';
@@ -518,7 +518,7 @@ function frc({ content, t }) {
 function sponsorCard(item, t) {
   const mark = image(item.logo, item.name, item.width, item.height) || `<strong>${e(item.name)}</strong>`;
   const label = t(`${item.name} resmî sitesi`, `${item.name} official website`);
-  return `<article class="sponsor-card">${safeHref(item.url) ? `<a class="sponsor-logo" href="${e(safeHref(item.url))}" target="_blank" rel="noopener noreferrer" aria-label="${e(label)}">${mark}</a>` : `<div class="sponsor-logo">${mark}</div>`}<div class="sponsor-caption"><h3>${e(item.name)}</h3><p>${e(item.role)}</p></div></article>`;
+  return `<article class="sponsor-card">${safeHref(item.url) ? `<a class="sponsor-logo" href="${e(safeHref(item.url))}" target="_blank" rel="noopener" aria-label="${e(label)}">${mark}</a>` : `<div class="sponsor-logo">${mark}</div>`}<div class="sponsor-caption"><h3>${e(item.name)}</h3><p>${e(item.role)}</p></div></article>`;
 }
 function sponsors({ content, t }) {
   const organizer = content.frcOrganizer;
