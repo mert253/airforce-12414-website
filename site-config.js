@@ -21,6 +21,9 @@ export const siteConfig = {
   teamPhotoWidth: 1600,
   teamPhotoHeight: 900,
   teamPhotoPosition: "center",
+  // İsteğe bağlı: aynı fotoğrafın daha küçük kopyaları. Telefonlar küçük dosyayı indirir.
+  // Örnek: [{ src: "/assets/takim-800.webp", width: 800 }, { src: "/assets/takim-1200.webp", width: 1200 }]
+  teamPhotoSources: [],
   // Ek fotoğraflar için contentTemplates.photo örneğini kullanın.
   gallery: [],
   instagram: "https://www.instagram.com/airforce12414/",

@@ -14,6 +14,11 @@ export function safeHref(value) {
   try { const url = new URL(value); return ['https:', 'http:', 'mailto:'].includes(url.protocol) ? value : ''; } catch { return ''; }
 }
 export function safeImageSrc(value) { const href = safeHref(value); return href && !href.startsWith('mailto:') && !href.startsWith('#') ? href : ''; }
+// Optional smaller copies of one photo, [{ src, width }], become a srcset so phones download a smaller file.
+export function responsiveSources(sources) {
+  const list = (Array.isArray(sources) ? sources : []).filter(item => safeImageSrc(item?.src) && !/,/.test(item.src) && Number.isInteger(item.width) && item.width > 0);
+  return list.map(item => `${safeImageSrc(item.src)} ${item.width}w`).join(', ');
+}
 export function safeObjectPosition(value) {
   const tokens = typeof value === 'string' ? value.trim().split(/\s+/) : [];
   return tokens.length >= 1 && tokens.length <= 2 && tokens.every(token => /^(left|right|top|bottom|center)$/.test(token) || (/^\d+(?:\.\d+)?%$/.test(token) && parseFloat(token) <= 100)) ? tokens.join(' ') : 'center';
@@ -28,11 +33,11 @@ function copyEmailControl(email, t) {
   if (!email) return '';
   return `<span class="copy-email-wrap"><button type="button" class="copy-email-btn" data-copy-email="${e(email)}" aria-label="${e(t('E-posta adresini kopyala', 'Copy email address'))}">${icon('copy')}<span>${t('Kopyala', 'Copy')}</span></button><span class="sr-only" role="status" aria-live="polite" data-copy-status></span></span>`;
 }
-function image(source, alt, width = 1600, height = 1000, className = '', position = '') {
+function image(source, alt, width = 1600, height = 1000, className = '', position = '', extra = '') {
   const src = safeImageSrc(source);
   if (!src) return '';
   const sizes = Number.isInteger(width) && width > 0 && Number.isInteger(height) && height > 0 ? ` width="${width}" height="${height}"` : '';
-  return `<img${className ? ` class="${className}"` : ''} src="${e(src)}" alt="${e(alt)}"${sizes}${position ? ` style="object-position:${safeObjectPosition(position)}"` : ''} loading="lazy" decoding="async">`;
+  return `<img${className ? ` class="${className}"` : ''} src="${e(src)}" alt="${e(alt)}"${sizes}${position ? ` style="object-position:${safeObjectPosition(position)}"` : ''}${extra} loading="lazy" decoding="async">`;
 }
 function placeholder(label, type = 'camera', extra = '') { return `<div class="media-placeholder ${extra}">${icon(type)}<span>${e(label)}</span></div>`; }
 function itemImage(item, label = 'AIR FORCE #12414', type = 'camera') { return image(item?.image, item?.imageAlt || item?.title || item?.name, item?.imageWidth, item?.imageHeight) || placeholder(label, type); }
@@ -187,7 +192,8 @@ export function buildContentRoutes(data = content, lang = 'tr') {
 export const contentRoutes = buildContentRoutes();
 
 function team({ content, t }) {
-  const photo = image(content.teamPhoto, content.teamPhotoAlt, content.teamPhotoWidth, content.teamPhotoHeight, 'team-photo-image', content.teamPhotoPosition);
+  const sources = responsiveSources(content.teamPhotoSources);
+  const photo = image(content.teamPhoto, content.teamPhotoAlt, content.teamPhotoWidth, content.teamPhotoHeight, 'team-photo-image', content.teamPhotoPosition, sources ? ` srcset="${e(sources)}" sizes="(min-width: 981px) 540px, 92vw"` : '');
   const students = publishedRecords(content.students);
   const mentors = publishedRecords(content.mentors);
   const subteams = publishedRecords(content.subteams);

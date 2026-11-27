@@ -56,7 +56,7 @@ Yayın incelemesinde 3M logosu, önceki İSTEK görseli ve sponsorluk sunumları
 
 - Barlow Condensed normal 700 / 900 ve Inter: referansın açık kaynak yazı tipleri yerel WOFF2 dosyaları olarak saklanır.
 - Kaynak stil: https://irs5993.com/_next/static/css/e4dde1a961cb9f7f.css
-- Türkçe karakterler için Latin Extended alt kümeleri de indirildi. Kullanılan yüzler ve dosya yolları `public/assets/fonts/reference-fonts.css` içinde kayıtlıdır.
+- Türkçe karakterler için Latin Extended alt kümeleri de indirildi. Kullanılan yüzler ve dosya yolları `styles.css` başındaki `@font-face` kurallarındadır.
 - Barlow lisansı: `public/assets/fonts/OFL.txt`; Inter lisansı: `public/assets/fonts/Inter-OFL.txt`.
 
 ## Sonradan eklenecek fotoğraflar

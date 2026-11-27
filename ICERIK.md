@@ -54,6 +54,13 @@ teamPhotoHeight: 900,
 teamPhotoPosition: "center",
 ```
 
+Hazırlık ve hız:
+
+- Ana dosyayı WebP olarak, en çok 1600 piksel genişlikte kaydedin (hedef: 250 KB altı). Fotoğraf 16:9 çerçevede `cover` ile kırpılır, `teamPhotoPosition` ile odak noktasını seçebilirsiniz.
+- Telefonlar için daha küçük kopyalar üretip `teamPhotoSources` alanına yazın: `[{ src: "/assets/takim-800.webp", width: 800 }, { src: "/assets/takim-1200.webp", width: 1200 }]` (800 piksel için hedef: 100 KB altı). Tarayıcı ekrana uygun olanı seçer; alan boşsa yalnızca ana dosya kullanılır.
+- Ana sayfada fotoğraf ilk ekranın içinde kaldığı için hemen ve yüksek öncelikle yüklenir (tembel yükleme yok). Bu yüzden dosya boyutu doğrudan ilk görünüm hızını etkiler. Fotoğrafı ekledikten sonra Lighthouse ile mobilde bir kez ölçün.
+- Fotoğraf eklenene kadar çerçeve görsel isteği yapmayan hafif bir yer tutucudur.
+
 Gerçek piksel ölçülerini ve fotoğrafı açıklayan kısa metni yazın. İngilizce alternatif metni `siteConfig.en.teamPhotoAlt` alanına ekleyin. Fotoğraf eklendiğinde ana sayfada Pegasus açılışının hemen altında, Takımımız sayfasında ve takım galerisinde görünür. Telefon görünümünde fotoğrafın tamamı gösterilir.
 
 Ana sayfa ve sezon sayfasında, yayımlanmış etkinlikler arasından tarihi en yakın ve henüz bitmemiş olan gösterilir. `startDate` ve `endDate` alanlarını `2027-03-19` biçiminde yazın. Görünen tarih metni `date`, konum `location`, resmî bağlantı `url` alanından gelir. Tarih seçimi Türkiye saatine göre site üretilirken yapılır; takvim değiştiğinde veya bir etkinlik bittikten sonra siteyi yeniden üretin. Tamamlanan etkinlikler `/etkinlikler/` sayfasında "Geçmiş etkinlikler" altında korunur.

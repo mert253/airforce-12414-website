@@ -134,7 +134,8 @@ test('adding the supplied team photo exposes it in home, team and gallery withou
   try {
     siteConfig.teamPhoto = '';
     const preview = renderPage(readFileSync(resolve(root, 'index.html'), 'utf8'), pages[0]);
-    assert.match(preview, /team-photo-placeholder-tr\.png[^>]*alt="Takım Fotoğrafı"/);
+    assert.match(preview, /class="photo-stage photo-stage--empty"><span>[^]*?Takım fotoğrafı<\/span>/);
+    assert.doesNotMatch(preview.match(/<section class="home-photo"[\s\S]*?<\/section>/)[0], /<img/, 'the empty frame needs no image request');
     assert.doesNotMatch(preview, /data-team-photo/);
     assert.doesNotMatch(renderContent('gallery'), /team-photo-placeholder/);
     siteConfig.teamPhoto = '/assets/logo-440.webp'; // Existing local image used only as a test fixture.
@@ -142,6 +143,8 @@ test('adding the supplied team photo exposes it in home, team and gallery withou
     const home = renderPage(readFileSync(resolve(root, 'index.html'), 'utf8'), pages[0]);
     assert.match(home, /data-team-photo/);
     assert.match(home, /alt="TEST_TEAM_PHOTO"/);
+    assert.match(home.match(/<img[^>]*TEST_TEAM_PHOTO[^>]*>/)[0], /fetchpriority="high"/);
+    assert.doesNotMatch(home.match(/<img[^>]*TEST_TEAM_PHOTO[^>]*>/)[0], /loading="lazy"/);
     assert.doesNotMatch(home, /team-photo-placeholder/);
     assert.match(renderContent('team'), /alt="TEST_TEAM_PHOTO"/);
     assert.match(renderContent('gallery'), /alt="TEST_TEAM_PHOTO"/);
@@ -432,4 +435,21 @@ test('Event schema dates match the dates shown on the page', () => {
     assert.equal(shown, `${start.getUTCDate()}–${end.getUTCDate()} ${month} ${start.getUTCFullYear()}`, path);
     assert.equal(event.location.name, html.match(/<dt>(?:Konum|Location)<\/dt><dd>([^<]+)</)[1], path);
   }
+});
+
+test('team photo sources become a srcset with a matching sizes hint, and bad entries are ignored', () => {
+  const previous = { photo: siteConfig.teamPhoto, sources: siteConfig.teamPhotoSources };
+  try {
+    siteConfig.teamPhoto = '/assets/takim-1600.webp';
+    siteConfig.teamPhotoSources = [{ src: '/assets/takim-800.webp', width: 800 }, { src: '/assets/takim-1200.webp', width: 1200 }, { src: 'mailto:x@y.z', width: 400 }, { src: '/assets/a,b.webp', width: 300 }, { src: '/assets/no-width.webp' }];
+    const home = renderPage(readFileSync(resolve(root, 'index.html'), 'utf8'), pages[0]);
+    const photo = home.match(/<img[^>]*team-photo-image[^>]*>/)[0];
+    assert.match(photo, /srcset="\/assets\/takim-800\.webp 800w, \/assets\/takim-1200\.webp 1200w"/);
+    assert.match(photo, /sizes="[^"]+"/);
+    assert.match(photo, /src="\/assets\/takim-1600\.webp"/);
+    assert.match(photo, /width="1600" height="900"/);
+    assert.match(renderContent('team'), /srcset="\/assets\/takim-800\.webp 800w/);
+    siteConfig.teamPhotoSources = [];
+    assert.doesNotMatch(renderPage(readFileSync(resolve(root, 'index.html'), 'utf8'), pages[0]).match(/<img[^>]*team-photo-image[^>]*>/)[0], /srcset/);
+  } finally { siteConfig.teamPhoto = previous.photo; siteConfig.teamPhotoSources = previous.sources; }
 });

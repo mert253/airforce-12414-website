@@ -4,11 +4,13 @@ import { localizedPath, siteContent, translator } from './locale.js';
 import { renderHomeHero } from './home-hero.js';
 import { icon } from './icons.js';
 import { selectUpcomingEvent, formatContentDate } from './season-utils.js';
-import { buildContentRoutes, contentRoutes, renderContent, publishedRecords, journalCategory, eventPath, safeImageSrc, safeObjectPosition, newestDate, newestYear } from './content-pages.js';
+import { buildContentRoutes, contentRoutes, renderContent, publishedRecords, journalCategory, eventPath, safeImageSrc, safeObjectPosition, responsiveSources, newestDate, newestYear } from './content-pages.js';
 
 const teamName = 'AIR FORCE #12414';
 const organization = 'Ankara İstech Robotics';
 const logoPath = '/assets/logo-440.webp';
+// The logo shows at 112-152px, so screens at 1x or 1.5x pixel density do not need the 440px file.
+const logoSrcset = '/assets/logo-220.webp 220w, /assets/logo-320.webp 320w, /assets/logo-440.webp 440w';
 // Read the original script bytes so the bundler cannot change the hosting CSP hash.
 const loaderBootstrap = readFileSync(new URL('./page-loader-bootstrap.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n').trim();
 const e = (value) => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
@@ -25,20 +27,24 @@ function a(label, href, attributes = '') {
   return safe ? `<a href="${e(safe)}" ${attributes}>${label}</a>` : `<span>${label}</span>`;
 }
 function dims(w, h) { return Number.isInteger(w) && w > 0 && Number.isInteger(h) && h > 0 ? ` width="${w}" height="${h}"` : ''; }
-function img(src, alt, cls = '', w, h, lazy = true) {
-  return safeImageSrc(src) ? `<img src="${e(safeImageSrc(src))}" alt="${e(alt)}" class="${cls}"${cls==='team-photo-image' ? ` style="object-position:${e(safeObjectPosition(content.teamPhotoPosition))}"` : ''}${dims(w,h)} ${lazy ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async">` : '';
+function img(src, alt, cls = '', w, h, lazy = true, extra = '') {
+  return safeImageSrc(src) ? `<img src="${e(safeImageSrc(src))}" alt="${e(alt)}" class="${cls}"${cls==='team-photo-image' ? ` style="object-position:${e(safeObjectPosition(content.teamPhotoPosition))}"` : ''}${dims(w,h)}${extra} ${lazy ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async">` : '';
 }
+// On the home page the photo sits inside the first screen at every width (about 480-650px from the top),
+// so it loads right away at high priority, and phones pick a smaller file from the optional sources.
 function teamPhoto(content) {
-  const photo = img(content.teamPhoto, content.teamPhotoAlt, 'team-photo-image', content.teamPhotoWidth, content.teamPhotoHeight);
+  const srcset = responsiveSources(content.teamPhotoSources);
+  const photo = img(content.teamPhoto, content.teamPhotoAlt, 'team-photo-image', content.teamPhotoWidth, content.teamPhotoHeight, false,
+    srcset ? ` srcset="${e(srcset)}" sizes="(min-width: 1256px) 1160px, 92vw"` : '');
   return photo ? `<figure class="home-team-photo" data-team-photo>
     <div class="photo-stage">${photo}</div>
     <figcaption>${teamName} · ${e(content.school.name)}</figcaption>
   </figure>` : '';
 }
+// Until the real photo exists the 16:9 frame is plain markup and CSS: no image request, nothing to decode.
 function teamPhotoPlaceholder(t) {
-  const src = t('/assets/team-photo-placeholder-tr.png', '/assets/team-photo-placeholder-en.png');
   return `<figure class="home-team-photo">
-    <div class="photo-stage">${img(src, t('Takım Fotoğrafı', 'Team Photo'), 'team-photo-image', 1280, 720)}</div>
+    <div class="photo-stage photo-stage--empty"><span>${icon('camera')}${t('Takım fotoğrafı', 'Team photo')}</span></div>
   </figure>`;
 }
 function sponsorMark(sponsor) {
@@ -216,7 +222,7 @@ function siteHeader(page) {
   <a class="skip-link" href="#main">${t('İçeriğe geç', 'Skip to content')}</a>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="${localizedPath('/', lang)}" aria-label="${t('AIR FORCE ana sayfa', 'AIR FORCE home')}"><img src="${logoPath}" alt="" width="440" height="197"></a>
+      <a class="brand" href="${localizedPath('/', lang)}" aria-label="${t('AIR FORCE ana sayfa', 'AIR FORCE home')}"><img src="${logoPath}" srcset="${logoSrcset}" sizes="(max-width: 980px) 120px, 136px" alt="" width="440" height="197"></a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation" aria-label="${t('Menüyü aç', 'Open menu')}" hidden>
         <span>${t('Menü', 'Menu')}</span><i aria-hidden="true"></i>
       </button>
@@ -243,7 +249,7 @@ function siteFooter(lang) {
     <div class="container">
       <div class="footer-main">
         <div class="footer-identity">
-          <a href="${localizedPath('/', lang)}" class="footer-brand"><img src="${logoPath}" alt="AIR FORCE Ankara İstech Robotics" width="440" height="197" loading="lazy"></a>
+          <a href="${localizedPath('/', lang)}" class="footer-brand"><img src="${logoPath}" srcset="${logoSrcset}" sizes="152px" alt="AIR FORCE Ankara İstech Robotics" width="440" height="197" loading="lazy"></a>
           <p>${e(content.school.name)}<br>FIRST Robotics Competition · #12414</p>
           <div class="footer-contact">
             <span class="footer-email-row">${a(e(content.email) + icon('mail'), `mailto:${content.email}`)}${content.emailIsPlaceholder ? '' : `<span class="copy-email-wrap"><button type="button" class="copy-email-btn copy-email-btn--dark" data-copy-email="${e(content.email)}" aria-label="${e(t('E-posta adresini kopyala', 'Copy email address'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>${t('Kopyala', 'Copy')}</span></button><span class="sr-only" role="status" aria-live="polite" data-copy-status></span></span>`}</span>

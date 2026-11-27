@@ -47,6 +47,9 @@
 .home-photo-heading { align-items: baseline; margin-bottom: var(--space-6); }
 .photo-stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius-card); background: #e3e7ec; }
 .team-photo-image { width: 100%; height: 100%; object-fit: cover; }
+.photo-stage--empty { display: grid; place-items: center; border: 1px dashed var(--control-line); background: #eef1f5; }
+.photo-stage--empty > span { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--muted); font-size: var(--fs-small); font-weight: 500; }
+.photo-stage--empty svg { width: 24px; height: 24px; }
 .home-team-photo figcaption { margin-top: var(--space-3); color: var(--muted); font-size: var(--fs-small); }
 
 /* Season: light surface, the year as a readout and a navy event panel. */
