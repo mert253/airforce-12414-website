@@ -7,7 +7,7 @@
 .filter-button:hover { border-color: var(--line-strong); }
 .filter-button[aria-pressed='true'] { border-color: var(--navy); background: var(--navy); color: var(--silver); }
 .search-label { min-width: 0; margin-left: auto; }
-.search-input { width: min(100%, 280px); min-height: 44px; padding: 10px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-control); background: var(--paper); color: var(--ink); font-size: 15px; }
+.search-input { width: min(100%, 280px); min-height: 44px; padding: 10px 14px; border: 1px solid var(--control-line); border-radius: var(--radius-control); background: var(--paper); color: var(--ink); font-size: 15px; }
 .filter-count { flex-basis: 100%; margin: var(--space-1) 0 0; color: var(--muted); font-size: 13px; }
 
 /* Empty states */
@@ -184,6 +184,10 @@ body:has(.lightbox[open]) { overflow: hidden; }
 .not-found .lead { font-size: 20px; }
 .not-found .button { margin-top: var(--space-6); }
 
+/* Touch screens get 44px targets on the smaller controls. */
+@media (pointer: coarse) {
+  .copy-email-btn, .filter-button, .footer-main nav a { min-height: 44px; }
+}
 @media (max-width: 980px) {
   .support-intro { grid-template-columns: minmax(0, 1fr); }
   .support-contact { max-width: 480px; }
@@ -212,6 +216,7 @@ body:has(.lightbox[open]) { overflow: hidden; }
   .site-header, .site-footer, .page-loader, .back-to-top, .copy-email-wrap, .section-nav, .gallery-nav, .skip-link, .lightbox, .event-countdown { display: none !important; }
   :root, body { background: #fff !important; color: #000 !important; }
   .hero, .page-heading, .season-event, .af-event-panel, .af-identity { background: #fff !important; color: #000 !important; border: 1px solid #ccc; border-image: none !important; }
+  .hero h1, .hero-identity, .page-heading h1, .breadcrumb, .breadcrumb > span, .af-event-panel h3, .season-event h3, .af-event-date, .season-date { color: #000 !important; }
   .hero-description, .season-location, .af-event-location, .page-heading > p { color: #222 !important; }
   a { text-decoration: underline; }
   .section { break-inside: avoid; }

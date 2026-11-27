@@ -183,7 +183,7 @@ export function buildContentRoutes(data = content, lang = 'tr') {
     for (const entry of entries) {
       const path = `${prefix}${entry.slug}/`;
       const item = lang === 'en' ? localizeRecord(entry, lang) : entry;
-      const record = { kind, path, file: `${path.slice(1)}index.html`, title: item.title || item.name, kicker: kind === 'article' ? journalCategory(item.category, lang) : kind === 'event' ? t('Etkinlik', 'Event') : item.year || item.category || 'AIR FORCE 12414', description: kind === 'event' ? [item.summary, item.date, item.location].filter(Boolean).join(' · ') || item.title : item.description || item.summary || item.title || item.name, noindex: false, item, parent: { title: parent[0], path: parent[1] } };
+      const record = { kind, path, file: `${path.slice(1)}index.html`, title: item.title || item.name, kicker: kind === 'article' ? journalCategory(item.category, lang) : kind === 'event' ? t('Etkinlik', 'Event') : item.year || item.category || 'AIR FORCE 12414', description: kind === 'event' ? [item.summary, item.date, item.location].filter(Boolean).map(part => String(part).trim().replace(/[.\s]+$/, '')).join(' · ') || item.title : item.description || item.summary || item.title || item.name, noindex: false, item, parent: { title: parent[0], path: parent[1] } };
       const existing = result.findIndex(route => route.path === path);
       if (existing >= 0) result[existing] = record;
       else result.push(record);
@@ -461,7 +461,7 @@ function gallery({ content, t }) {
     ${albums.length ? `<section class="section" id="etkinlik-albumleri">${heading(t('Etkinlikler', 'Events'), t('Etkinlik albümleri', 'Event albums'))}<div class="archive-grid">${albums.map(({ event, photos: list }) => {
       const href = `/etkinlikler/${event.slug}/#fotograflar`;
       const cover = list[0];
-      return `<article class="archive-card"><a class="card-media" href="${e(href)}" aria-label="${e(t(`${event.title} albümünü açın`, `Open the ${event.title} album`))}">${image(cover.src, cover.alt, cover.width, cover.height)}</a><div class="card-body">${event.date ? `<span class="tag">${e(event.date)}</span>` : ''}<h3>${e(event.title)}</h3>${para(t(`${list.length} fotoğraf`, `${list.length} photos`))}${anchor(t('Albümü açın', 'Open album'), href)}</div></article>`;
+      return `<article class="archive-card"><a class="card-media" href="${e(href)}" aria-label="${e(t(`${event.title} albümünü açın`, `Open the ${event.title} album`))}">${image(cover.src, cover.alt, cover.width, cover.height)}</a><div class="card-body">${event.date ? `<span class="tag">${e(event.date)}</span>` : ''}<h3>${e(event.title)}</h3>${para(t(`${list.length} fotoğraf`, `${list.length} ${list.length === 1 ? 'photo' : 'photos'}`))}${anchor(t('Albümü açın', 'Open album'), href)}</div></article>`;
     }).join('')}</div></section>` : ''}
     ${videos.length ? `<section class="section" id="videolar">${heading(t('Video arşivi', 'Video archive'), t('Videolar', 'Videos'))}<div class="content-grid cols-2">${videos.map(video => `<article class="archive-card">${safeImageSrc(video.thumbnail) ? `<div class="card-media">${image(video.thumbnail, video.title)}</div>` : ''}<div class="card-body"><span class="tag">${e(video.category)}</span><h3>${e(video.title)}</h3>${para(video.description)}${anchor(t('Videoyu izleyin', 'Watch the video'), video.url, 'text-link', true)}</div></article>`).join('')}</div></section>` : ''}`;
 }
@@ -591,6 +591,6 @@ export function renderContent(kind, item, lang = 'tr') {
   if (!Object.hasOwn(renderers, kind)) throw new Error(`Unknown content page: ${kind}`);
   const content = siteContent(lang);
   const t = translator(lang);
-  const date = (value) => lang === 'en' ? formatContentDate(value, lang) || value : value;
+  const date = (value) => formatContentDate(value, lang) || value;
   return renderers[kind]({ content, t, date, lang }, item && lang === 'en' ? localizeRecord(item, lang) : item);
 }

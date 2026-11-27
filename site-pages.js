@@ -218,7 +218,7 @@ function siteHeader(page) {
         <span>${t('Menü', 'Menu')}</span><i aria-hidden="true"></i>
       </button>
       <nav id="navigation" aria-label="${t('Ana menü', 'Main menu')}">${pageLinks(navHTML(page), lang)}</nav>
-      <a class="language-switch" href="${e(alternate)}" hreflang="${otherLang}" lang="${otherLang}" aria-label="${t('Switch to English', 'Türkçeye geç')}">${t('EN', 'TR')}</a>
+      <a class="language-switch" href="${e(alternate)}" hreflang="${otherLang}" lang="${otherLang}" aria-label="${t('EN – Switch to English', 'TR – Türkçeye geç')}">${t('EN', 'TR')}</a>
     </div>
   </header>`;
 }

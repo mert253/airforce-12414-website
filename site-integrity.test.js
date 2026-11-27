@@ -319,3 +319,11 @@ test('every TR and EN page uses the Pegasus icon set with a cache version, at th
   assert.deepEqual(manifest.icons.map(icon => icon.sizes), ['192x192', '512x512']);
   assert.ok(manifest.icons.every(icon => icon.src.endsWith('?v=2')));
 });
+
+test('the language switch names its visible text so voice control and screen readers agree', () => {
+  for (const [path, html] of rendered) {
+    const link = html.match(/<a class="language-switch"[^>]*aria-label="([^"]+)"[^>]*>([^<]+)<\/a>/);
+    assert.ok(link, path);
+    assert.ok(link[1].startsWith(link[2]), `${path}: "${link[1]}" should start with "${link[2]}"`);
+  }
+});

@@ -350,7 +350,7 @@ test('event detail route exists with a parent breadcrumb and renders the officia
   assert.equal(buildContentRoutes({}).find(item => item.kind === 'event'), undefined);
   const english = buildContentRoutes(siteConfig, 'en').find(item => item.kind === 'event');
   assert.equal(english.parent.title, 'Events');
-  assert.match(english.description, /March 19–21, 2027/);
+  assert.match(english.description, /19–21 March 2027/);
 });
 
 test('event detail shows published program, results and photos only and escapes text', () => {
@@ -479,7 +479,7 @@ test('support page explains the first season from the upcoming event and adds no
   assert.match(html, /href="\/etkinlikler\/"/);
   assert.doesNotMatch(html, /\.pdf|Katıl|seviye|paket/i);
   const english = renderContent('support', undefined, 'en');
-  assert.match(english, /starting at the Ankara Regional \(March 19–21, 2027, Ankara\)\./);
+  assert.match(english, /starting at the Ankara Regional \(19–21 March 2027, Ankara\)\./);
   const previous = siteConfig.events;
   try {
     siteConfig.events = [];
@@ -538,4 +538,36 @@ test('contact page has no Events section heading, only a small calendar link whe
   const html = renderContent('contact');
   assert.doesNotMatch(html, /<h2 class="section-heading">Etkinlikler<\/h2>/);
   assert.match(html, /class="text-link" href="\/etkinlikler\/"/);
+});
+
+test('dates read naturally in both languages and fall back to free text', () => {
+  const news = { status: 'published', slug: 'atolye', title: 'Atölye', date: '2026-11-16', category: 'Teknik', summary: 'Özet' };
+  const previous = siteConfig.news;
+  try {
+    siteConfig.news = [news];
+    assert.match(renderContent('news', undefined, 'tr'), /16 Kasım 2026/);
+    assert.match(renderContent('news', undefined, 'en'), /16 November 2026/);
+    assert.doesNotMatch(renderContent('news', undefined, 'tr'), /2026-11-16/);
+    assert.match(renderContent('article', { ...news, date: 'Kış 2026' }, 'tr'), /Kış 2026/);
+  } finally { siteConfig.news = previous; }
+});
+
+test('event meta descriptions join their parts without a stray full stop', () => {
+  for (const lang of ['tr', 'en']) {
+    const route = buildContentRoutes(siteConfig, lang).find(item => item.kind === 'event');
+    assert.doesNotMatch(route.description, /\.\s*·|·\s*·/, lang);
+    assert.equal(route.description.split(' · ').length, 3, lang);
+  }
+});
+
+test('album photo counts use the singular for one photo', () => {
+  const previous = siteConfig.events;
+  const photo = { status: 'published', src: '/assets/a.webp', alt: 'A' };
+  try {
+    siteConfig.events = [{ ...previous[0], photos: [photo] }];
+    assert.match(renderContent('gallery', undefined, 'en'), /<p>1 photo<\/p>/);
+    assert.match(renderContent('gallery', undefined, 'tr'), /<p>1 fotoğraf<\/p>/);
+    siteConfig.events = [{ ...previous[0], photos: [photo, photo] }];
+    assert.match(renderContent('gallery', undefined, 'en'), /<p>2 photos<\/p>/);
+  } finally { siteConfig.events = previous; }
 });

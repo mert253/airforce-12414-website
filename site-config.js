@@ -137,7 +137,7 @@ export const siteConfig = {
       results: [],
       photos: [],
       en: {
-        date: "March 19–21, 2027",
+        date: "19–21 March 2027",
         location: "ODTÜ GVO High School Sports Hall, Çankaya, Ankara",
         summary: "The first official event of AIR FORCE #12414’s first FIRST Robotics Competition season.",
       },
@@ -168,7 +168,7 @@ export const siteConfig = {
       answer: "2027 sezonundaki ilk etkinliğimiz 19–21 Mart 2027 tarihlerinde Ankara’da, ODTÜ GVO Lisesi Spor Salonu’nda düzenlenecek olan Ankara Regional’dır.",
       en: {
         question: "When and where is your first competition?",
-        answer: "Our first event of the 2027 season is the Ankara Regional, taking place on March 19–21, 2027 at ODTÜ GVO High School Sports Hall in Çankaya, Ankara.",
+        answer: "Our first event of the 2027 season is the Ankara Regional, taking place on 19–21 March 2027 at ODTÜ GVO High School Sports Hall in Çankaya, Ankara.",
       },
     },
     {
