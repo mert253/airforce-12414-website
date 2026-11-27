@@ -1,5 +1,5 @@
 import { siteConfig as content } from './site-config.js';
-import { selectUpcomingEvent, isUpcomingEvent, isCalendarDate, formatContentDate } from './season-utils.js';
+import { selectUpcomingEvent, isUpcomingEvent, isCalendarDate, formatContentDate, eventPhase } from './season-utils.js';
 import { localizeRecord, siteContent, translator } from './locale.js';
 import { icon, linkIconName, labelWithIcon } from './icons.js';
 
@@ -78,6 +78,17 @@ const publishedProgram = event => publishedRecords(event?.program).filter(item =
 const publishedResults = event => publishedRecords(event?.results).filter(item => String(item.label || '').trim() && String(item.result || '').trim());
 export function eventPath(event) {
   return event?.status === 'published' && validSlug(event) && String(event.title || '').trim() ? `/etkinlikler/${event.slug}/` : '';
+}
+// Event label that follows the event: written for the phase at build time, switched in the browser by main.js.
+export function phaseEyebrow(t, event, set = 'season') {
+  const labels = {
+    home: { upcoming: t('Yarışma takvimi', 'Competition schedule'), live: t('Yarışma takvimi', 'Competition schedule'), ended: t('Tamamlanan etkinlik', 'Completed event') },
+    season: { upcoming: t('Yaklaşan etkinlik', 'Upcoming event'), live: t('Etkinlik devam ediyor', 'Event in progress'), ended: t('Tamamlanan etkinlik', 'Completed event') },
+  }[set];
+  const phase = eventPhase(event);
+  if (!phase) return `<p class="eyebrow">${e(t('Etkinlik', 'Event'))}</p>`;
+  const data = ['upcoming', 'live', 'ended'].map(key => ` data-label-${key}="${e(labels[key])}"`).join('');
+  return `<p class="eyebrow" data-event-phase data-start="${e(event.startDate)}" data-end="${e(event.endDate)}"${data}>${e(labels[phase])}</p>`;
 }
 export function sponsorshipMailto(content, t) {
   return `mailto:${content.email}?subject=${encodeURIComponent(t('AIR FORCE 12414 Sponsorluk', 'AIR FORCE 12414 Sponsorship'))}`;
@@ -273,7 +284,7 @@ function robots({ content, t, lang }) {
       <div class="entry-actions">${anchor(t('FIRST ve FRC hakkında', 'About FIRST and FRC'), '/frc/')}${anchor(t('Resmî FIRST takım profili', 'Official FIRST team profile'), content.firstProfile, 'text-link', true)}</div>
     </div>
     ${event ? `<aside class="af-event-panel" aria-label="${t('Yarışma takvimi', 'Competition schedule')}" data-reveal data-reveal-delay="60">
-      <p class="eyebrow">${t('Yaklaşan etkinlik', 'Upcoming event')}</p><h3>${e(event.title)}</h3>
+      ${phaseEyebrow(t, event)}<h3>${e(event.title)}</h3>
       <p class="af-event-date">${e(event.date)}</p>
       <p class="af-event-location">${e(event.location)}</p>
       <div class="event-countdown" data-countdown-start="${e(event.startDate)}" data-countdown-end="${e(event.endDate)}" aria-live="off" hidden></div>
@@ -408,7 +419,7 @@ function event({ content, t, date, lang }, item = {}) {
       <div class="entry-actions">${anchor(t('FIRST etkinlik sayfası', 'FIRST event page'), item.url, 'button button-gold', true)}${anchor(t('Sezon sayfası', 'Season page'), '/robotlar/')}</div>
     </div>
     <aside class="af-event-panel" aria-label="${t('Etkinlik bilgileri', 'Event information')}" data-reveal data-reveal-delay="60">
-      <p class="eyebrow">${upcoming ? t('Yaklaşan etkinlik', 'Upcoming event') : t('Etkinlik', 'Event')}</p>
+      ${phaseEyebrow(t, item)}
       ${item.date ? `<p class="af-event-date">${e(item.date)}</p>` : ''}
       ${datesValid ? `<div class="event-countdown" data-countdown-start="${e(item.startDate)}" data-countdown-end="${e(item.endDate)}" aria-live="off" hidden></div>` : ''}
     </aside>

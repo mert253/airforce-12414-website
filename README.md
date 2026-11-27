@@ -2,7 +2,7 @@
 
 İSTEK Ankara Okulları’nın FIRST Robotics Competition takımı AIR FORCE’un Türkçe ve İngilizce web sitesi.
 
-[Canlı site](https://air-force-12414-v2.vercel.app/)
+[Canlı site](https://team12414.com) (alan adı bağlanana kadar önizleme adresi: https://air-force-12414-v2.vercel.app/)
 
 ## Yerelde çalıştırma
 

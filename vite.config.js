@@ -5,6 +5,7 @@ import { dirname } from 'node:path';
 import { defineConfig } from 'vite';
 import { pages, renderPage } from './site-pages.js';
 import { siteConfig } from './site-config.js';
+import { rebuildNeededFrom, selectUpcomingEvent } from './season-utils.js';
 import { generateRobotsTxt, generateSitemapXml } from './seo-utils.js';
 
 // Every published detail receives the same shell automatically on build/restart.
@@ -75,6 +76,13 @@ export default defineConfig({
     configurePreviewServer(server) {
       server.middlewares.use(notFoundMiddleware(file =>
         readFile(resolve(server.config.root, server.config.build.outDir, file), 'utf8')));
+    },
+    buildStart() {
+      const event = selectUpcomingEvent(siteConfig.events);
+      const stale = rebuildNeededFrom(siteConfig.events);
+      console.log(event
+        ? `Sezon: yaklaşan etkinlik "${event.title}" (${event.date}). Etkinlik menüsü, ana sayfa paneli ve şemalar ${stale} tarihinden itibaren eskir; o gün siteyi yeniden derleyin.`
+        : 'Sezon: yaklaşan etkinlik yok; takvim değişince (yeni etkinlik ya da yeni yıl) yeniden derleyin.');
     },
     transformIndexHtml: {
       order: 'pre',

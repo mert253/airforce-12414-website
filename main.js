@@ -1,6 +1,6 @@
 import { matchesCollectionItem } from './collection-utils.js';
 import { installPageTransitions } from './page-transitions.js';
-import { getEventCountdown } from './season-utils.js';
+import { getEventCountdown, phaseLabel } from './season-utils.js';
 
 installPageTransitions();
 
@@ -210,6 +210,14 @@ if (dialog && galleryLinks.length && typeof dialog.showModal === 'function') {
   });
   dialog.addEventListener('close', () => { trigger?.focus(); photo.removeAttribute('src'); });
 }
+
+// The site is built once, so anything that depends on today is settled in the browser:
+// event labels move from upcoming to completed, and the footer year follows the calendar.
+document.querySelectorAll('[data-event-phase]').forEach(el => {
+  const label = phaseLabel({ upcoming: el.dataset.labelUpcoming, live: el.dataset.labelLive, ended: el.dataset.labelEnded }, el.dataset.start, el.dataset.end);
+  if (label) el.textContent = label;
+});
+document.querySelectorAll('[data-current-year]').forEach(el => { el.textContent = String(new Date().getFullYear()); });
 
 // Live countdown for upcoming FRC events (progressively enhanced, pauses when tab is hidden).
 const countdownElements = [...document.querySelectorAll('[data-countdown-start][data-countdown-end]')];

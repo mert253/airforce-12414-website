@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { localizedPath, siteContent, translator } from './locale.js';
 import { renderHomeHero } from './home-hero.js';
 import { icon } from './icons.js';
-import { selectUpcomingEvent, formatContentDate } from './season-utils.js';
-import { buildContentRoutes, contentRoutes, renderContent, publishedRecords, journalCategory, eventPath, safeImageSrc, safeObjectPosition, responsiveSources, newestDate, newestYear } from './content-pages.js';
+import { selectUpcomingEvent, formatContentDate, eventPhase } from './season-utils.js';
+import { buildContentRoutes, contentRoutes, renderContent, phaseEyebrow, publishedRecords, journalCategory, eventPath, safeImageSrc, safeObjectPosition, responsiveSources, newestDate, newestYear } from './content-pages.js';
 
 const teamName = 'AIR FORCE #12414';
 const organization = 'Ankara İstech Robotics';
@@ -99,7 +99,7 @@ function homeContent(lang = 'tr') {
         <a class="text-link" href="/robotlar/">${t('Sezon sayfası', 'Season page')}${icon()}</a>
       </div>
       ${event ? `<article class="season-event">
-        <p class="eyebrow">${t('Yarışma takvimi', 'Competition schedule')}</p>
+        ${phaseEyebrow(t, event, 'home')}
         <h3>${e(event.title)}</h3>
         <p class="season-date">${e(event.date)}</p>
         <p class="season-location">${e(event.location)}</p>
@@ -258,7 +258,7 @@ function siteFooter(lang) {
         </div>
         ${pageLinks(footerNavigation(t), lang)}
       </div>
-      <div class="footer-bottom"><span>© ${new Date().getFullYear()} AIR FORCE #12414</span><a href="#top">${t('Sayfanın başına dön', 'Back to top')}${icon('up')}</a></div>
+      <div class="footer-bottom"><span>© <span data-current-year>${new Date().getFullYear()}</span> AIR FORCE #12414</span><a href="#top">${t('Sayfanın başına dön', 'Back to top')}${icon('up')}</a></div>
     </div>
   </footer>
   <button type="button" class="back-to-top" data-back-to-top aria-label="${t('Sayfanın başına dön', 'Back to top')}" hidden>${icon('up')}</button>
@@ -297,7 +297,8 @@ function eventSchema(event, pageUrl, organizer) {
     startDate: event.startDate,
     endDate: event.endDate,
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    eventStatus: 'https://schema.org/EventScheduled',
+    // schema.org has no "completed" status, so a finished event keeps its dates and drops the status.
+    ...(eventPhase(event) !== 'ended' ? { eventStatus: 'https://schema.org/EventScheduled' } : {}),
     location: {
       '@type': 'Place',
       name: event.location,

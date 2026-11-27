@@ -39,3 +39,26 @@ export function getEventCountdown(startDate, endDate, now = new Date()) {
   return { state: 'upcoming', days, hours, minutes, seconds };
 }
 
+
+// One definition of "where is this event in time", shared by the build and the browser.
+// Returns 'upcoming', 'live', 'ended', or '' when the dates are not valid.
+export function eventPhase(event, now = new Date()) {
+  return getEventCountdown(event?.startDate, event?.endDate, now)?.state || '';
+}
+
+// The page is static, so labels are written for the phase at build time and carry the other phases
+// in data attributes. The browser picks the right one for today without a rebuild.
+export function phaseLabel(labels, startDate, endDate, now = new Date()) {
+  const phase = getEventCountdown(startDate, endDate, now)?.state;
+  return (phase && labels?.[phase]) || '';
+}
+
+// First day (Istanbul) on which a build made before it becomes out of date for event promotion,
+// which is the day after the earliest end date among events still promoted at build time.
+export function rebuildNeededFrom(events = [], now = new Date()) {
+  const ends = events.filter(event => isUpcomingEvent(event, now)).map(event => event.endDate).sort();
+  if (!ends.length) return '';
+  const next = new Date(`${ends[0]}T00:00:00Z`);
+  next.setUTCDate(next.getUTCDate() + 1);
+  return next.toISOString().slice(0, 10);
+}

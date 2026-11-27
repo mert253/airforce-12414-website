@@ -63,7 +63,7 @@ Hazırlık ve hız:
 
 Gerçek piksel ölçülerini ve fotoğrafı açıklayan kısa metni yazın. İngilizce alternatif metni `siteConfig.en.teamPhotoAlt` alanına ekleyin. Fotoğraf eklendiğinde ana sayfada Pegasus açılışının hemen altında, Takımımız sayfasında ve takım galerisinde görünür. Telefon görünümünde fotoğrafın tamamı gösterilir.
 
-Ana sayfa ve sezon sayfasında, yayımlanmış etkinlikler arasından tarihi en yakın ve henüz bitmemiş olan gösterilir. `startDate` ve `endDate` alanlarını `2027-03-19` biçiminde yazın. Görünen tarih metni `date`, konum `location`, resmî bağlantı `url` alanından gelir. Tarih seçimi Türkiye saatine göre site üretilirken yapılır; takvim değiştiğinde veya bir etkinlik bittikten sonra siteyi yeniden üretin. Tamamlanan etkinlikler `/etkinlikler/` sayfasında "Geçmiş etkinlikler" altında korunur.
+Ana sayfa ve sezon sayfasında, yayımlanmış etkinlikler arasından tarihi en yakın ve henüz bitmemiş olan gösterilir. `startDate` ve `endDate` alanlarını `2027-03-19` biçiminde yazın. Görünen tarih metni `date`, konum `location`, resmî bağlantı `url` alanından gelir. Tarih seçimi Türkiye saatine göre site üretilirken yapılır. Etkinlik bittikten sonra yapılacaklar için [Sezon işletmesi](#sezon-işletmesi-ne-kendiliğinden-güncellenir-ne-zaman-yeniden-derlenir) bölümüne bakın. Tamamlanan etkinlikler `/etkinlikler/` sayfasında "Geçmiş etkinlikler" altında korunur.
 
 `season.updatedAt`, içeriği gerçekten güncellediğiniz tarihi taşımalıdır; güncelmiş gibi görünmesi için otomatik değiştirilmez. Boş arşivler menüde görünmez, kısa bir boş durum açıklaması sunar ve `noindex` ile arama motorlarından dışlanır. İlk geçerli yayımlanmış kayıt eklendiğinde yeniden derleme ile bu kısıt kalkar.
 
@@ -185,7 +185,35 @@ npm run build
 
 **Özel belgeleri ve taslak dosyaları `public` içine koymayın.** Bu klasördeki dosyalar bağlantısı olmasa da yayımlanır. Yayımlanmayacak dosyalar için `public` dışındaki bir klasör kullanın.
 
-Bilinmeyen adresler `404.html` sayfasını 404 durum koduyla döndürmeli. Domain bağlandığında `siteUrl` alanına gerçek HTTPS adresini yazın. Sosyal paylaşım ve canonical adresler bu alanı kullanır.
+Bilinmeyen adresler `404.html`, bilinmeyen `/en/` adresleri `en/404.html` sayfasını 404 durum koduyla döndürmeli. Yayından sonra `npm run check:deploy -- https://team12414.com` ile denetleyin. Domain bağlandığında `siteUrl` alanına gerçek HTTPS adresini yazın. Sosyal paylaşım ve canonical adresler bu alanı kullanır.
+
+## Sezon işletmesi: ne kendiliğinden güncellenir, ne zaman yeniden derlenir
+
+Site statik dosyalardan oluşur; "bugün"e bağlı her şey ya derleme anında ya da ziyaretçinin tarayıcısında hesaplanır. **Günlük otomatik derleme bilinçli olarak kurulmamıştır.** Aşağıdaki liste, neyin kendi kendine güncel kaldığını ve neyin elle yeniden yayın gerektirdiğini gösterir.
+
+**Yeniden derleme gerekmeden, tarayıcıda güncellenenler**
+
+- Geri sayım: etkinlik başlayınca "Etkinlik devam ediyor", bitince gizlenir.
+- Etkinlik etiketi: "Yaklaşan etkinlik" → "Etkinlik devam ediyor" → "Tamamlanan etkinlik". Ana sayfada "Yarışma takvimi" etiketi bitince "Tamamlanan etkinlik" olur.
+- Altbilgideki © yılı.
+
+**Etkinlik bittikten sonraki gün yeniden derleme gerektirenler** (Ankara Regional için 22 Mart 2027)
+
+- Ana sayfadaki sezon paneli ve sezon sayfasındaki etkinlik kutusu bitmiş etkinliği göstermeyi bırakıp sonraki yaklaşan etkinliğe geçer; yoksa "Yaklaşan etkinlik kaydı yok" görünür.
+- Menüdeki Gündem altındaki etkinlik bağlantısı.
+- Sponsor olun sayfasındaki "ilk etkinliğimiz…" cümlesi.
+- Ana sayfa ve sezon sayfasındaki Event şeması. Bitmiş bir etkinlik şemada tarihleriyle kalır ama `eventStatus` yazılmaz; etkinlik sayfası arama motorlarında doğru kalır.
+- Yeni sezon içeriği: `season.year`, `season.status`, `season.description` ve `season.updatedAt`.
+
+**Nasıl yeniden derlenir**
+
+1. Yeni etkinliği `events` listesine ekleyin (`startDate`, `endDate`, `date`, `location`, `url`, `status: "published"`), bitenin kaydını silmeyin; `/etkinlikler/` altında "Geçmiş etkinlikler"de kalır.
+2. Sonuç, program ve fotoğraflar onaylanınca etkinliğin `results`, `program`, `photos` alanlarına yazın.
+3. Değişikliği `main` dalına gönderin; Vercel kendiliğinden derler. İçerik değişmediyse Vercel → Deployments → son dağıtım → Redeploy ile ya da `git commit --allow-empty -m "chore: rebuild"` ve push ile yeniden derleyin.
+4. Derleme günlüğünün başındaki `Sezon:` satırı, hangi tarihten itibaren yeniden derlemek gerektiğini yazar.
+5. Yayından sonra `npm run check:deploy -- https://team12414.com` çalıştırın.
+
+İleride günlük derleme istenirse Vercel'de bir Deploy Hook oluşturup bir zamanlayıcıyla (örneğin günde bir GitHub Actions işi) çağırmak yeterlidir; bu ekip kararıyla şimdilik kurulmamıştır.
 
 ## Siteyi güncel tutmak: sorumlular ve sıklık
 

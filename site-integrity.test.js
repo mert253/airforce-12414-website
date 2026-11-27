@@ -468,3 +468,29 @@ test('hosting config sends the agreed referrer policy, canonical slashes, long-l
   assert.ok(pages.some(page => page.path === '/en/404.html' && page.hidden), 'the English 404 page is built');
   for (const page of pages.filter(item => item.path.endsWith('/') && item.path !== '/')) assert.ok(page.file.endsWith('/index.html'), page.path);
 });
+
+test('event labels and the footer year are settled in the browser, so no rebuild is needed for them', () => {
+  for (const [path, html] of [['/', rendered.get('/')], ['/en/', rendered.get('/en/')], ['/robotlar/', rendered.get('/robotlar/')], ['/etkinlikler/ankara-regional/', rendered.get('/etkinlikler/ankara-regional/')]]) {
+    const label = html.match(/<p class="eyebrow" data-event-phase[^>]*>/)?.[0];
+    assert.ok(label, path);
+    assert.match(label, /data-start="2027-03-19" data-end="2027-03-21"/, path);
+    for (const phase of ['upcoming', 'live', 'ended']) assert.match(label, new RegExp(`data-label-${phase}="[^"]+"`), `${path} ${phase}`);
+  }
+  assert.match(rendered.get('/robotlar/'), /data-event-phase[^>]*>Yaklaşan etkinlik</);
+  assert.match(rendered.get('/en/robots/'), /data-label-ended="Completed event"/);
+  assert.match(rendered.get('/'), /© <span data-current-year>\d{4}<\/span> AIR FORCE/);
+});
+
+test('a finished event keeps its dates in the schema but no longer claims to be scheduled', () => {
+  const finished = { ...siteConfig.events[0], startDate: '2026-01-09', endDate: '2026-01-11' };
+  const route = buildContentRoutes({ ...siteConfig, events: [finished] }).find(item => item.kind === 'event');
+  const page = { ...route, lang: 'tr', originalPath: route.path, body: () => renderContent('event', route.item, 'tr') };
+  const html = renderPage(readFileSync(resolve(root, route.file), 'utf8'), page);
+  const event = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'].find(item => item['@type'] === 'Event');
+  assert.equal(event.startDate, '2026-01-09');
+  assert.equal(event.endDate, '2026-01-11');
+  assert.equal(event.eventStatus, undefined);
+  assert.match(html, /data-event-phase[^>]*>Tamamlanan etkinlik</);
+  const upcoming = JSON.parse(rendered.get('/etkinlikler/ankara-regional/').match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'].find(item => item['@type'] === 'Event');
+  assert.equal(upcoming.eventStatus, 'https://schema.org/EventScheduled');
+});

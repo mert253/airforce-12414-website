@@ -55,3 +55,36 @@ test('isUpcomingEvent keeps an event through its last Istanbul day and rejects d
   assert.equal(isUpcomingEvent({ ...event, endDate: '2027-03-01' }, new Date('2027-01-01T00:00:00Z')), false);
   assert.equal(isUpcomingEvent(undefined), false);
 });
+
+import { eventPhase, phaseLabel, rebuildNeededFrom } from './season-utils.js';
+
+test('event phase is upcoming, live or ended in Istanbul time, and empty for invalid dates', () => {
+  const event = { startDate: '2027-03-19', endDate: '2027-03-21' };
+  assert.equal(eventPhase(event, new Date('2027-03-18T20:59:59Z')), 'upcoming');
+  assert.equal(eventPhase(event, new Date('2027-03-18T21:00:00Z')), 'live');
+  assert.equal(eventPhase(event, new Date('2027-03-21T20:59:58Z')), 'live');
+  assert.equal(eventPhase(event, new Date('2027-03-21T21:00:00Z')), 'ended');
+  assert.equal(eventPhase({ startDate: '2027-02-30', endDate: '2027-03-21' }), '');
+  assert.equal(eventPhase(undefined), '');
+});
+
+test('phase labels switch with the date and stay empty without a matching label', () => {
+  const labels = { upcoming: 'Yaklaşan', live: 'Devam ediyor', ended: 'Tamamlandı' };
+  assert.equal(phaseLabel(labels, '2027-03-19', '2027-03-21', new Date('2027-01-01T00:00:00Z')), 'Yaklaşan');
+  assert.equal(phaseLabel(labels, '2027-03-19', '2027-03-21', new Date('2027-03-20T12:00:00Z')), 'Devam ediyor');
+  assert.equal(phaseLabel(labels, '2027-03-19', '2027-03-21', new Date('2027-04-01T00:00:00Z')), 'Tamamlandı');
+  assert.equal(phaseLabel({ upcoming: 'x' }, '2027-03-19', '2027-03-21', new Date('2027-04-01T00:00:00Z')), '');
+  assert.equal(phaseLabel(labels, 'bad', '2027-03-21'), '');
+});
+
+test('the rebuild date is the day after the earliest promoted event ends', () => {
+  const events = [
+    { status: 'published', startDate: '2027-03-19', endDate: '2027-03-21' },
+    { status: 'published', startDate: '2027-04-10', endDate: '2027-04-12' },
+    { status: 'published', startDate: '2026-01-01', endDate: '2026-01-03' },
+    { status: 'draft', startDate: '2026-12-01', endDate: '2026-12-02' },
+  ];
+  assert.equal(rebuildNeededFrom(events, new Date('2026-11-26T09:00:00Z')), '2027-03-22');
+  assert.equal(rebuildNeededFrom(events, new Date('2027-03-25T09:00:00Z')), '2027-04-13');
+  assert.equal(rebuildNeededFrom([], new Date()), '');
+});
